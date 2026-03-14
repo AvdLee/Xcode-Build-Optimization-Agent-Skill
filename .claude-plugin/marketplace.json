@@ -1,0 +1,50 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "xcode-build-skills",
+  "version": "1.0.0",
+  "owner": {
+    "name": "Antoine van der Lee",
+    "email": "contact@avanderlee.com"
+  },
+  "metadata": {
+    "description": "Multi-skill Xcode build optimization plugin covering benchmarking, compile hotspots, project settings, SPM dependency analysis, and recommend-first orchestration."
+  },
+  "plugins": [
+    {
+      "name": "xcode-build-skills",
+      "description": "Five Xcode build optimization skills in one plugin: benchmark, code compilation analysis, project optimization, SPM build analysis, and a recommend-first orchestrator.",
+      "repository": "https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill",
+      "version": "1.0.0",
+      "author": {
+        "name": "Antoine van der Lee",
+        "email": "contact@avanderlee.com"
+      },
+      "license": "MIT",
+      "category": "development",
+      "keywords": [
+        "xcode",
+        "builds",
+        "incremental-builds",
+        "clean-builds",
+        "swift",
+        "ios",
+        "macos",
+        "spm",
+        "benchmarking",
+        "compilation",
+        "project-settings",
+        "explicit-modules"
+      ],
+      "tags": [
+        "xcode",
+        "build-optimization",
+        "swift",
+        "ios",
+        "spm",
+        "benchmarking",
+        "apple-platforms"
+      ],
+      "source": "./"
+    }
+  ]
+}

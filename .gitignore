@@ -60,3 +60,13 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Local artifacts created while using this skill repo
+.build-benchmark/
+
+# Internal drafting aid; generated locally, not versioned
+.agents/product-marketing-context.md
