@@ -71,6 +71,13 @@ These settings optimize for fast iteration during development.
 - **Why:** Guards conditional compilation blocks (e.g., `#if DEBUG`) and ensures debug-only code paths are included.
 - **Risk:** Low
 
+### Eager Linking
+
+- **Key:** `EAGER_LINKING`
+- **Recommended:** `YES`
+- **Why:** Allows the linker to start work before all compilation tasks finish, reducing wall-clock build time. Particularly effective for Debug builds where link time is a meaningful fraction of total build time.
+- **Risk:** Low
+
 ## Release Configuration
 
 These settings optimize for production builds.
@@ -123,8 +130,29 @@ These settings optimize for production builds.
 
 - **Key:** `COMPILATION_CACHING`
 - **Recommended:** `YES`
-- **Why:** Caches compilation results for Swift and C-family sources so repeated compilations of the same inputs are served from cache. The biggest wins come from branch switching and clean builds where source files are recompiled unchanged. This is an opt-in feature.
+- **Why:** Caches compilation results for Swift and C-family sources so repeated compilations of the same inputs are served from cache. The biggest wins come from branch switching and clean builds where source files are recompiled unchanged. This is an opt-in feature. The umbrella setting controls both `SWIFT_ENABLE_COMPILE_CACHE` and `CLANG_ENABLE_COMPILE_CACHE` under the hood; those can be toggled independently if needed.
 - **Risk:** Low -- can also be enabled via per-user project settings so it does not need to be committed to the shared project file.
+
+### Integrated Swift Driver
+
+- **Key:** `SWIFT_USE_INTEGRATED_DRIVER`
+- **Recommended:** `YES`
+- **Why:** Uses the integrated Swift driver which runs inside the build system process, eliminating inter-process overhead for compilation scheduling. Enabled by default in modern Xcode but worth verifying in migrated projects.
+- **Risk:** Low
+
+### Clang Module Compilation
+
+- **Key:** `CLANG_ENABLE_MODULES`
+- **Recommended:** `YES`
+- **Why:** Enables Clang module compilation for C/Objective-C sources, caching module maps on disk instead of reprocessing headers on every import. Eliminates redundant header parsing across translation units.
+- **Risk:** Low
+
+### Explicit Module Builds
+
+- **Key:** `SWIFT_ENABLE_EXPLICIT_MODULES` (C/ObjC enabled by default in Xcode 16+; for Swift use `_EXPERIMENTAL_SWIFT_EXPLICIT_MODULES`)
+- **Recommended:** Evaluate per-project
+- **Why:** Makes module compilation visible to the build system as discrete tasks, improving parallelism and scheduling. Reduces redundant module rebuilds by making dependency edges explicit. Some projects see regressions due to the overhead of dependency scanning, so benchmark before and after enabling.
+- **Risk:** Medium -- test thoroughly; currently experimental for Swift targets.
 
 ## Cross-Target Consistency
 

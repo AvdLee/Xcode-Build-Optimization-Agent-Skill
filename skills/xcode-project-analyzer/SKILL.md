@@ -1,9 +1,9 @@
 ---
-name: xcode-project-optimizer
-description: Audit Xcode project configuration, build settings, scheme behavior, and script phases to find build-time improvements with explicit approval gates. Use when a developer wants project-level build optimization, slow incremental builds, guidance on target dependencies, build settings review, run script phase optimization, parallelization improvements, or module-map and DEFINES_MODULE configuration.
+name: xcode-project-analyzer
+description: Audit Xcode project configuration, build settings, scheme behavior, and script phases to find build-time improvements with explicit approval gates. Use when a developer wants project-level build analysis, slow incremental builds, guidance on target dependencies, build settings review, run script phase analysis, parallelization improvements, or module-map and DEFINES_MODULE configuration.
 ---
 
-# Xcode Project Optimizer
+# Xcode Project Analyzer
 
 Use this skill for project- and target-level build inefficiencies that are unlikely to be solved by source edits alone.
 

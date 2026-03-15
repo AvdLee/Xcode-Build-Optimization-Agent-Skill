@@ -24,9 +24,10 @@
   ],
   "skills": [
     "./skills/xcode-build-benchmark",
-    "./skills/xcode-code-compilation-optimizer",
-    "./skills/xcode-project-optimizer",
+    "./skills/xcode-compilation-analyzer",
+    "./skills/xcode-project-analyzer",
     "./skills/spm-build-analysis",
-    "./skills/xcode-build-optimizer"
+    "./skills/xcode-build-orchestrator",
+    "./skills/xcode-build-fixer"
   ]
 }

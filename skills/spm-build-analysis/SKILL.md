@@ -1,6 +1,6 @@
 ---
 name: spm-build-analysis
-description: Analyze Swift Package Manager dependencies, package plugins, module variants, and CI-oriented build overhead that slow Xcode builds. Use when a developer suspects packages, plugins, or dependency graph shape are hurting clean or incremental build performance, mentions SPM slowness, package resolution time, build plugin overhead, or duplicate module builds from configuration drift.
+description: Analyze Swift Package Manager dependencies, package plugins, module variants, and CI-oriented build overhead that slow Xcode builds. Use when a developer suspects packages, plugins, or dependency graph shape are hurting clean or incremental build performance, mentions SPM slowness, package resolution time, build plugin overhead, duplicate module builds from configuration drift, circular dependencies between modules, oversized modules needing splitting, or modularization best practices.
 ---
 
 # SPM Build Analysis
@@ -29,6 +29,12 @@ Use this skill when package structure, plugins, or dependency configuration are 
 - checkout or fetch cost signals that show up in clean environments
 - configuration drift that forces duplicate module builds
 - risks from package targets that use different macros or options while sharing dependencies
+- dependency direction violations (features depending on each other instead of shared lower layers)
+- circular dependencies between modules (extract shared contracts into a protocol module)
+- oversized modules (200+ files) that widen incremental rebuild scope
+- umbrella modules using `@_exported import` that create hidden dependency chains
+- missing interface/implementation separation that blocks build parallelism
+- test targets depending on the app target instead of the module under test
 
 ## Explicit Module Dependency Angle
 
@@ -45,7 +51,7 @@ For each finding, include:
 - estimated impact
 - approval requirement
 
-If the main problem is not package-related, hand off to [`xcode-project-optimizer`](../xcode-project-optimizer/SKILL.md) or [`xcode-code-compilation-optimizer`](../xcode-code-compilation-optimizer/SKILL.md) by reading the target skill's SKILL.md and applying its workflow to the same project context.
+If the main problem is not package-related, hand off to [`xcode-project-analyzer`](../xcode-project-analyzer/SKILL.md) or [`xcode-compilation-analyzer`](../xcode-compilation-analyzer/SKILL.md) by reading the target skill's SKILL.md and applying its workflow to the same project context.
 
 ## Additional Resources
 

@@ -1,9 +1,9 @@
 ---
-name: xcode-build-optimizer
-description: Orchestrate Xcode build optimization by benchmarking first, running the specialist skills, prioritizing findings, requesting explicit approval, and re-benchmarking after approved changes. Use when a developer wants an end-to-end build optimization workflow, asks to speed up Xcode builds, wants a full build audit, or needs a recommend-first optimization pass covering compilation, project settings, and packages.
+name: xcode-build-orchestrator
+description: Orchestrate Xcode build optimization by benchmarking first, running the specialist analysis skills, prioritizing findings, requesting explicit approval, delegating approved fixes to xcode-build-fixer, and re-benchmarking after changes. Use when a developer wants an end-to-end build optimization workflow, asks to speed up Xcode builds, wants a full build audit, or needs a recommend-first optimization pass covering compilation, project settings, and packages.
 ---
 
-# Xcode Build Optimizer
+# Xcode Build Orchestrator
 
 Use this skill as the recommend-first entrypoint for end-to-end Xcode build optimization work.
 
@@ -28,8 +28,8 @@ Run this phase in plan mode. The agent benchmarks, analyzes, and produces a revi
 3. Verify the benchmark artifact has non-empty `timing_summary_categories`. If empty, the timing summary parser may have failed -- re-parse the raw logs or inspect them manually.
 4. If `SwiftCompile` or `CompileC` dominate the timing summary, run `diagnose_compilation.py` with the same project inputs to capture type-checking hotspots.
 5. Run the specialist analyses that fit the evidence by reading each skill's SKILL.md and applying its workflow:
-   - [`xcode-code-compilation-optimizer`](../xcode-code-compilation-optimizer/SKILL.md)
-   - [`xcode-project-optimizer`](../xcode-project-optimizer/SKILL.md)
+   - [`xcode-compilation-analyzer`](../xcode-compilation-analyzer/SKILL.md)
+   - [`xcode-project-analyzer`](../xcode-project-analyzer/SKILL.md)
    - [`spm-build-analysis`](../spm-build-analysis/SKILL.md)
 6. Merge findings into a single prioritized improvement plan.
 7. Generate the markdown optimization report using `generate_optimization_report.py` and save it to `.build-benchmark/optimization-plan.md`. This report includes the build settings audit, timing analysis, prioritized recommendations, and an approval checklist.
@@ -39,13 +39,12 @@ The developer reviews `.build-benchmark/optimization-plan.md`, checks the approv
 
 ### Phase 2 -- Execute and verify (agent mode)
 
-Run this phase in agent mode after the developer has reviewed and approved recommendations from the plan.
+Run this phase in agent mode after the developer has reviewed and approved recommendations from the plan. Delegate all implementation work to [`xcode-build-fixer`](../xcode-build-fixer/SKILL.md) by reading its SKILL.md and applying its workflow.
 
 9. Read `.build-benchmark/optimization-plan.md` and identify the approved items from the approval checklist.
-10. Implement only the approved changes.
-11. Re-run the benchmark with the same inputs used in phase 1.
-12. Append verification results to the optimization plan: post-change medians, absolute and percentage deltas, and confidence notes.
-13. Report before and after results, plus any remaining follow-up opportunities.
+10. Hand off to `xcode-build-fixer` with the approved plan. The fixer applies each approved change, verifies compilation, and re-benchmarks.
+11. Append verification results to the optimization plan: post-change medians, absolute and percentage deltas, and confidence notes.
+12. Report before and after results, plus any remaining follow-up opportunities.
 
 ## Prioritization Rules
 
@@ -78,12 +77,12 @@ Wait for explicit developer approval.
 
 ## Post-Approval Execution
 
-After approval:
+After approval, delegate to `xcode-build-fixer`:
 
-- implement only the approved items
-- keep changes scoped
-- note any deviations from the original recommendation plan
-- re-benchmark with the same benchmark contract
+- the fixer implements only the approved items
+- changes are applied atomically and kept scoped
+- any deviations from the original recommendation plan are noted
+- the fixer re-benchmarks with the same benchmark contract
 
 ## Final Report
 

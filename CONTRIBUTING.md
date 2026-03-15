@@ -19,7 +19,7 @@ If you have access to a skill-authoring assistant such as `skill-creator`, use i
 - valid YAML frontmatter
 - concise, trigger-oriented descriptions
 - progressive disclosure into reference files
-- consistent terminology across the five skills
+- consistent terminology across the six skills
 
 ### Keep the repo on mission
 
@@ -41,7 +41,7 @@ Avoid broad iOS architecture guidance, CI platform evangelism, or product docume
 - Every `SKILL.md` must include valid `name` and `description` frontmatter.
 - Descriptions must clearly state what the skill does and when to use it.
 - Keep `SKILL.md` concise; push deep details into nearby reference files.
-- Preserve recommend-first behavior, especially in `xcode-build-optimizer`.
+- Preserve recommend-first behavior, especially in `xcode-build-orchestrator`.
 
 ### Technical quality
 
@@ -59,7 +59,7 @@ Avoid broad iOS architecture guidance, CI platform evangelism, or product docume
 
 ## Typical Contribution Types
 
-- Improve one of the five skill entrypoints.
+- Improve one of the six skill entrypoints.
 - Add a focused reference file for a missing Xcode build topic.
 - Improve the benchmark schema or helper scripts.
 - Clarify README installation or usage guidance.

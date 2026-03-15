@@ -4,7 +4,7 @@ This is a multi-skill Xcode build optimization repository.
 
 ## Layout
 
-- `skills/` contains five installable Agent Skills, each with a `SKILL.md` entrypoint.
+- `skills/` contains six installable Agent Skills, each with a `SKILL.md` entrypoint.
 - `references/`, `schemas/`, and `scripts/` at the repo root are shared support files used by the skills.
 - `.claude-plugin/` contains plugin and marketplace metadata.
 
@@ -13,17 +13,18 @@ This is a multi-skill Xcode build optimization repository.
 | Skill | Purpose |
 |-------|---------|
 | `xcode-build-benchmark` | Repeatable clean and incremental build benchmarking |
-| `xcode-code-compilation-optimizer` | Swift compile hotspot analysis and source-level recommendations |
-| `xcode-project-optimizer` | Build settings, scheme, script phase, and target dependency auditing |
+| `xcode-compilation-analyzer` | Swift compile hotspot analysis and source-level recommendations |
+| `xcode-project-analyzer` | Build settings, scheme, script phase, and target dependency auditing |
 | `spm-build-analysis` | Package graph, plugin overhead, and module variant review |
-| `xcode-build-optimizer` | Orchestrator: benchmark, analyze, prioritize, approve, implement, re-benchmark |
+| `xcode-build-orchestrator` | Orchestrator: benchmark, analyze, prioritize, approve, delegate fixes, re-benchmark |
+| `xcode-build-fixer` | Apply approved optimization changes and verify with benchmarks |
 
 ## Rules
 
 - Recommend-first by default. Never apply project, source, or package changes without explicit developer approval.
 - Benchmark before optimizing. Use `.build-benchmark/` artifacts as evidence.
 - Treat clean and incremental builds as separate metrics.
-- The orchestrator (`xcode-build-optimizer`) is the primary entrypoint for end-to-end work.
+- The orchestrator (`xcode-build-orchestrator`) is the primary entrypoint for end-to-end work.
 - Shared references and schemas live at the repo root, not inside individual skills.
 
 ## Handoff Between Skills

@@ -12,7 +12,7 @@
   "plugins": [
     {
       "name": "xcode-build-skills",
-      "description": "Five Xcode build optimization skills in one plugin: benchmark, code compilation analysis, project optimization, SPM build analysis, and a recommend-first orchestrator.",
+      "description": "Six Xcode build optimization skills in one plugin: benchmark, compilation analysis, project analysis, SPM build analysis, a recommend-first orchestrator, and a fixer for applying approved changes.",
       "repository": "https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill",
       "version": "1.0.0",
       "author": {
