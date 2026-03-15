@@ -72,6 +72,59 @@ Key takeaways:
 - Branch switching and clean builds benefit the most.
 - Can be enabled via the "Enable Compilation Caching" build setting or per-user project settings.
 
+## Apple: Demystify explicitly built modules (WWDC24)
+
+Source:
+
+- <https://developer.apple.com/videos/play/wwdc2024/10171/>
+
+Key takeaways:
+
+- Explains how explicitly built modules divide compilation into scan, module build, and source compile stages.
+- Unrelated modules build in parallel, improving CPU utilization.
+- Module variant duplication is a key bottleneck -- uniform compiler options across targets prevent it.
+- The build log shows each module as a discrete task, making it easier to diagnose scheduling issues.
+
+## Stackademic: Improving Swift Compile-Time Performance -- 14 Tips
+
+Source:
+
+- <https://blog.stackademic.com/improving-swift-compile-time-performance-14-tips-that-actually-work-f511d9b53209>
+
+Key takeaways:
+
+- Mark classes `final` to eliminate virtual dispatch overhead and help the compiler optimize.
+- Use `private`/`fileprivate` for symbols not used outside their scope.
+- Prefer `struct` and `enum` over `class` when reference semantics are not needed.
+- Avoid long method chains without intermediate type annotations -- even simple-looking chains can take seconds to compile.
+- Add explicit return types to closures passed to generic functions.
+- Break large SwiftUI view bodies into smaller composed subviews.
+
+## Bitrise: Demystifying Explicitly Built Modules for Xcode
+
+Source:
+
+- <https://bitrise.io/blog/post/demystifying-explicitly-built-modules-for-xcode>
+
+Key takeaways:
+
+- Explicit module builds give `xcodebuild` visibility into smaller compilation tasks for better parallelism.
+- Enabled by default for C/Objective-C in Xcode 16+; experimental for Swift.
+- Minimizing module variants by aligning build options is the primary optimization lever.
+- Some projects see regressions from dependency scanning overhead -- benchmark before and after.
+
+## Bitrise: Xcode Compilation Cache FAQ
+
+Source:
+
+- <https://docs.bitrise.io/en/bitrise-build-cache/build-cache-for-xcode/xcode-compilation-cache-faq.html>
+
+Key takeaways:
+
+- Granular caching is controlled by `SWIFT_ENABLE_COMPILE_CACHE` and `CLANG_ENABLE_COMPILE_CACHE`, under the umbrella `COMPILATION_CACHING` setting.
+- Non-cacheable tasks include `CompileStoryboard`, `CompileXIB`, `CompileAssetCatalogVariant`, `PhaseScriptExecution`, `DataModelCompile`, `CopyPNGFile`, `GenerateDSYMFile`, and `Ld`.
+- SPM dependencies are not yet cacheable as of Xcode 26 beta.
+
 ## RocketSim Docs: Build Insights
 
 Sources:

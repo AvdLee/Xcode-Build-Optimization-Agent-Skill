@@ -27,21 +27,23 @@ For long-term monitoring across days, machines, Xcode versions, and teams, use [
 
 ## Included Skills
 
-This repo ships five installable skills:
+This repo ships six installable skills:
 
 - `xcode-build-benchmark`
-- `xcode-code-compilation-optimizer`
-- `xcode-project-optimizer`
+- `xcode-compilation-analyzer`
+- `xcode-project-analyzer`
 - `spm-build-analysis`
-- `xcode-build-optimizer`
+- `xcode-build-orchestrator`
+- `xcode-build-fixer`
 
 ### What Each Skill Does
 
 - `xcode-build-benchmark`: Runs repeatable clean and incremental build benchmarks and writes timestamped `.build-benchmark/` artifacts.
-- `xcode-code-compilation-optimizer`: Uses timing summaries and Swift frontend diagnostics to rank compile hotspots and source-level improvements.
-- `xcode-project-optimizer`: Audits schemes, target dependencies, scripts, and build settings for project-level wins.
+- `xcode-compilation-analyzer`: Uses timing summaries and Swift frontend diagnostics to rank compile hotspots and source-level improvements.
+- `xcode-project-analyzer`: Audits schemes, target dependencies, scripts, and build settings for project-level wins.
 - `spm-build-analysis`: Reviews package graph shape, build plugins, module variants, and CI-sensitive dependency overhead.
-- `xcode-build-optimizer`: Orchestrates the full workflow in two phases: analyze in plan mode (benchmark, run specialists, produce an optimization plan), then execute in agent mode (implement approved changes, re-benchmark, report deltas).
+- `xcode-build-orchestrator`: Orchestrates the full workflow in two phases: analyze in plan mode (benchmark, run specialists, produce an optimization plan), then delegate approved fixes to the fixer in agent mode and re-benchmark.
+- `xcode-build-fixer`: Applies approved optimization changes (build settings, script phases, source-level fixes, SPM restructuring) and re-benchmarks to verify improvement.
 
 ## Why Clean And Incremental Builds Both Matter
 
@@ -70,23 +72,24 @@ Install a single skill:
 npx skills add https://github.com/avdlee/xcode-build-optimization-agent-skill --skill xcode-build-benchmark
 ```
 
-Swap the skill name for any of the five skills under `skills/`:
+Swap the skill name for any of the six skills under `skills/`:
 
 - `xcode-build-benchmark`
-- `xcode-code-compilation-optimizer`
-- `xcode-project-optimizer`
+- `xcode-compilation-analyzer`
+- `xcode-project-analyzer`
 - `spm-build-analysis`
-- `xcode-build-optimizer`
+- `xcode-build-orchestrator`
+- `xcode-build-fixer`
 
 Start in plan mode and ask:
 
-> Use the xcode build optimizer skill and analyze the current project for clean and incremental build improvements.
+> Use the xcode build orchestrator skill and analyze the current project for clean and incremental build improvements.
 
 The agent produces `.build-benchmark/optimization-plan.md`. Review it, check the approval boxes, then switch to agent mode to implement.
 
 ### Option B: Claude Code Plugin
 
-Install the shared plugin to make all five skills available under one namespace.
+Install the shared plugin to make all six skills available under one namespace.
 
 #### Personal Usage
 
@@ -154,7 +157,7 @@ The plan includes:
 
 Example prompt for plan mode:
 
-> Use the xcode build optimizer skill and analyze the current project for clean and incremental build improvements.
+> Use the xcode build orchestrator skill and analyze the current project for clean and incremental build improvements.
 
 The agent will benchmark, analyze, and stop after producing the plan. No project files are modified.
 
@@ -203,11 +206,11 @@ xcode-build-optimization-agent-skill/
       SKILL.md
       references/
         benchmarking-workflow.md - Benchmark contract, clean vs incremental rules, and artifact expectations
-    xcode-code-compilation-optimizer/
+    xcode-compilation-analyzer/
       SKILL.md
       references/
         code-compilation-checks.md - Swift compile hotspot checks and code-level heuristics
-    xcode-project-optimizer/
+    xcode-project-analyzer/
       SKILL.md
       references/
         project-audit-checks.md - Build setting, script phase, and dependency audit checklist
@@ -215,10 +218,14 @@ xcode-build-optimization-agent-skill/
       SKILL.md
       references/
         spm-analysis-checks.md - Package graph, plugin overhead, and module variant review guide
-    xcode-build-optimizer/
+    xcode-build-orchestrator/
       SKILL.md
       references/
         orchestration-report-template.md - Prioritization, approval, and verification report template
+    xcode-build-fixer/
+      SKILL.md
+      references/
+        fix-patterns.md - Concrete before/after patterns for each fix category
 ```
 <!-- END SKILL STRUCTURE -->
 
@@ -250,7 +257,7 @@ If you want to catch regressions earlier and see whether your build times are im
 
 Real-world improvements reported by developers who used these skills. Add your own results by opening a pull request.
 
-The `xcode-build-optimizer` orchestrator generates your table row at the end of every optimization run, so contributing is a single copy-paste.
+The `xcode-build-orchestrator` generates your table row at the end of every optimization run, so contributing is a single copy-paste.
 
 | App | Incremental Before | Incremental After | Clean Before | Clean After |
 |-----|-------------------:|------------------:|-------------:|------------:|

@@ -30,6 +30,9 @@ Key settings to verify:
 - `GCC_OPTIMIZATION_LEVEL` -- `0` for Debug, `s` for Release
 - `ENABLE_TESTABILITY` -- `YES` for Debug, `NO` for Release
 - `COMPILATION_CACHING` -- recommended `YES` for all configurations; caches repeated compilations during branch switching and clean builds
+- `EAGER_LINKING` -- recommended `YES` for Debug; starts linking before all compilation finishes
+- `SWIFT_USE_INTEGRATED_DRIVER` -- recommended `YES`; uses the integrated driver for better scheduling
+- `CLANG_ENABLE_MODULES` -- recommended `YES`; caches module maps on disk for C/ObjC
 
 Do not flag language-migration settings (`SWIFT_STRICT_CONCURRENCY`, `SWIFT_UPCOMING_FEATURE_*`) as build performance issues.
 

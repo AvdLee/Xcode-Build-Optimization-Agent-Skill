@@ -68,10 +68,10 @@ If results are noisy, say so and recommend rerunning under calmer conditions.
 
 Stop after measurement if the user only asked for benchmarking. If they want optimization guidance, hand off the artifact to the relevant specialist by reading its SKILL.md and applying its workflow to the same project context:
 
-- [`xcode-code-compilation-optimizer`](../xcode-code-compilation-optimizer/SKILL.md)
-- [`xcode-project-optimizer`](../xcode-project-optimizer/SKILL.md)
+- [`xcode-compilation-analyzer`](../xcode-compilation-analyzer/SKILL.md)
+- [`xcode-project-analyzer`](../xcode-project-analyzer/SKILL.md)
 - [`spm-build-analysis`](../spm-build-analysis/SKILL.md)
-- [`xcode-build-optimizer`](../xcode-build-optimizer/SKILL.md) for full orchestration
+- [`xcode-build-orchestrator`](../xcode-build-orchestrator/SKILL.md) for full orchestration
 
 ## Additional Resources
 

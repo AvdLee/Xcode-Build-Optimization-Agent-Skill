@@ -5,10 +5,11 @@ const README_PATH = path.join(process.cwd(), "README.md");
 const SKILLS_ROOT = path.join(process.cwd(), "skills");
 const SKILL_DIRS = [
   "xcode-build-benchmark",
-  "xcode-code-compilation-optimizer",
-  "xcode-project-optimizer",
+  "xcode-compilation-analyzer",
+  "xcode-project-analyzer",
   "spm-build-analysis",
-  "xcode-build-optimizer",
+  "xcode-build-orchestrator",
+  "xcode-build-fixer",
 ];
 
 const beginMarker = "<!-- BEGIN SKILL STRUCTURE -->";
@@ -21,6 +22,7 @@ const describeReference = (fileName) => {
     "project-audit-checks.md": "Build setting, script phase, and dependency audit checklist",
     "spm-analysis-checks.md": "Package graph, plugin overhead, and module variant review guide",
     "orchestration-report-template.md": "Prioritization, approval, and verification report template",
+    "fix-patterns.md": "Concrete before/after patterns for each fix category",
   };
   return descriptions[fileName] || "Reference file";
 };
@@ -34,11 +36,14 @@ const buildTree = () => {
     "  references/",
     "    benchmark-artifacts.md",
     "    build-optimization-sources.md",
+    "    build-settings-best-practices.md",
     "    recommendation-format.md",
     "  schemas/",
     "    build-benchmark.schema.json",
     "  scripts/",
     "    benchmark_builds.py",
+    "    diagnose_compilation.py",
+    "    generate_optimization_report.py",
     "    render_recommendations.py",
     "    summarize_build_timing.py",
     "  skills/",

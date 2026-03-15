@@ -40,6 +40,12 @@ Use this structure when the orchestrator consolidates benchmark evidence and spe
 - [x] `ONLY_ACTIVE_ARCH`: `YES` (recommended: `YES`)
 - [x] `DEBUG_INFORMATION_FORMAT`: `dwarf` (recommended: `dwarf`)
 - [x] `ENABLE_TESTABILITY`: `YES` (recommended: `YES`)
+- [x] `EAGER_LINKING`: `YES` (recommended: `YES`)
+
+### General (All Configurations)
+- [x] `COMPILATION_CACHING`: `YES` (recommended: `YES`)
+- [x] `SWIFT_USE_INTEGRATED_DRIVER`: `YES` (recommended: `YES`)
+- [x] `CLANG_ENABLE_MODULES`: `YES` (recommended: `YES`)
 
 ### Release Configuration
 - [x] `SWIFT_COMPILATION_MODE`: `wholemodule` (recommended: `wholemodule`)
