@@ -76,6 +76,12 @@ Typical fixes:
 - Extract protocol definitions into lightweight interface modules.
 - Remove unnecessary `@_exported import` usage.
 - Align build options across targets that import the same packages to prevent module variant duplication.
+- Pin branch-tracked dependencies to tagged versions or commit hashes for deterministic resolution.
+
+Before applying version pin changes:
+
+- Run `git ls-remote --tags <url>` to confirm tags exist. If the upstream has no tags, pin to a specific revision hash instead.
+- Verify the pinned version resolves successfully with `xcodebuild -resolvePackageDependencies` before proceeding.
 
 ## Execution Workflow
 
@@ -106,6 +112,8 @@ After applying changes, update the optimization plan with:
 - Any deviations from the original recommendation
 
 If a fix produced no measurable improvement, note `No measurable improvement` and suggest whether to keep or revert.
+
+Note: `COMPILATION_CACHING` improvements cannot be captured by the standard clean-build benchmark because `xcodebuild clean` invalidates the cache between runs. When reporting on this setting, note that the benefit is real but requires a different measurement approach (e.g., branch-switch benchmarks or repeat builds without cleaning). Recommend keeping the setting enabled based on documented benefit rather than requiring a delta from the benchmark.
 
 ## Escalation
 

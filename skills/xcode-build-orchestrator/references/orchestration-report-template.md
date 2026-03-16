@@ -112,3 +112,6 @@ Open a PR: https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill/edit/m
 - If results are noisy, say that the verification is inconclusive instead of overstating success.
 - The Build Settings Audit scope is strictly build performance. Do not flag language-migration settings like `SWIFT_STRICT_CONCURRENCY` or `SWIFT_UPCOMING_FEATURE_*`.
 - The Compilation Diagnostics section is populated by `diagnose_compilation.py`. If not run, note that it was skipped.
+- `COMPILATION_CACHING` improvements cannot be captured by the standard clean-build benchmark because `xcodebuild clean` invalidates the cache. Note this in the verification section when the setting was changed. Recommend keeping it enabled based on documented benefit.
+- When recommending SPM version pins, verify that tagged versions exist (`git ls-remote --tags`) before suggesting a pin-to-tag change. If no tags exist, recommend pinning to a commit revision hash.
+- Before including a local package in a build-time recommendation, verify it is referenced in `project.pbxproj` via `XCLocalSwiftPackageReference`. Packages that exist on disk but are not linked do not affect build time.

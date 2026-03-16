@@ -17,23 +17,24 @@ Use this skill as the recommend-first entrypoint for end-to-end Xcode build opti
 
 ## Two-Phase Workflow
 
-The orchestration is designed as two distinct phases separated by developer review. Use **plan mode** for the first phase so the agent cannot modify any files. Switch to **agent mode** for the second phase to implement approved changes and verify them.
+The orchestration is designed as two distinct phases separated by developer review.
 
-### Phase 1 -- Analyze (plan mode)
+### Phase 1 -- Analyze (recommend-only)
 
-Run this phase in plan mode. The agent benchmarks, analyzes, and produces a reviewable optimization plan without touching any project files.
+Run this phase in agent mode because the agent needs to execute builds, run benchmark scripts, write benchmark artifacts, and generate the optimization report. However, treat Phase 1 as **recommend-only**: do not modify any project files, source files, packages, or build settings. The only files the agent creates during this phase are benchmark artifacts and the optimization plan inside `.build-benchmark/`.
 
 1. Collect the build target context: workspace or project, scheme, configuration, destination, and current pain point.
 2. Run `xcode-build-benchmark` to establish a baseline if no fresh benchmark exists.
 3. Verify the benchmark artifact has non-empty `timing_summary_categories`. If empty, the timing summary parser may have failed -- re-parse the raw logs or inspect them manually.
-4. If `SwiftCompile` or `CompileC` dominate the timing summary, run `diagnose_compilation.py` with the same project inputs to capture type-checking hotspots.
-5. Run the specialist analyses that fit the evidence by reading each skill's SKILL.md and applying its workflow:
+4. If incremental builds are the primary pain point and Xcode 16.4+ is available, recommend the developer enable **Task Backtraces** (Scheme Editor > Build tab > Build Debugging > "Task Backtraces"). This reveals why each task re-ran, which is critical for diagnosing unexpected replanning or input invalidation. Include any Task Backtrace evidence in the analysis.
+5. If `SwiftCompile`, `CompileC`, `SwiftEmitModule`, or `Planning Swift module` dominate the timing summary, run `diagnose_compilation.py` with the same project inputs to capture type-checking hotspots.
+6. Run the specialist analyses that fit the evidence by reading each skill's SKILL.md and applying its workflow:
    - [`xcode-compilation-analyzer`](../xcode-compilation-analyzer/SKILL.md)
    - [`xcode-project-analyzer`](../xcode-project-analyzer/SKILL.md)
    - [`spm-build-analysis`](../spm-build-analysis/SKILL.md)
-6. Merge findings into a single prioritized improvement plan.
-7. Generate the markdown optimization report using `generate_optimization_report.py` and save it to `.build-benchmark/optimization-plan.md`. This report includes the build settings audit, timing analysis, prioritized recommendations, and an approval checklist.
-8. Stop and present the plan to the developer for review.
+7. Merge findings into a single prioritized improvement plan.
+8. Generate the markdown optimization report using `generate_optimization_report.py` and save it to `.build-benchmark/optimization-plan.md`. This report includes the build settings audit, timing analysis, prioritized recommendations, and an approval checklist.
+9. Stop and present the plan to the developer for review.
 
 The developer reviews `.build-benchmark/optimization-plan.md`, checks the approval boxes for the recommendations they want implemented, and then triggers phase 2.
 
@@ -41,10 +42,10 @@ The developer reviews `.build-benchmark/optimization-plan.md`, checks the approv
 
 Run this phase in agent mode after the developer has reviewed and approved recommendations from the plan. Delegate all implementation work to [`xcode-build-fixer`](../xcode-build-fixer/SKILL.md) by reading its SKILL.md and applying its workflow.
 
-9. Read `.build-benchmark/optimization-plan.md` and identify the approved items from the approval checklist.
-10. Hand off to `xcode-build-fixer` with the approved plan. The fixer applies each approved change, verifies compilation, and re-benchmarks.
-11. Append verification results to the optimization plan: post-change medians, absolute and percentage deltas, and confidence notes.
-12. Report before and after results, plus any remaining follow-up opportunities.
+10. Read `.build-benchmark/optimization-plan.md` and identify the approved items from the approval checklist.
+11. Hand off to `xcode-build-fixer` with the approved plan. The fixer applies each approved change, verifies compilation, and re-benchmarks.
+12. Append verification results to the optimization plan: post-change medians, absolute and percentage deltas, and confidence notes.
+13. Report before and after results, plus any remaining follow-up opportunities.
 
 ## Prioritization Rules
 

@@ -22,6 +22,20 @@ Use this skill when package structure, plugins, or dependency configuration are 
 - dependency layering, repeated imports, and potential cycles
 - build logs or timing summaries that show package-related work
 
+## Verification Before Recommending
+
+Before including any local package in a recommendation, verify that it is actually part of the project's dependency graph. A `Vendor/` directory may contain packages that are not linked to any target.
+
+- Check `project.pbxproj` for `XCLocalSwiftPackageReference` entries that reference the package path.
+- Check `XCSwiftPackageProductDependency` entries to confirm the package's product is linked to at least one target.
+- If a local package exists on disk but is not referenced in the project, do not include it in build-time recommendations.
+
+When recommending version pins for branch-tracked dependencies:
+
+- Run `git ls-remote --tags` against the repository to confirm tagged versions exist before recommending a pin-to-tag change.
+- If no tags exist, recommend pinning to a specific commit revision hash for determinism instead.
+- Note which packages are branch-pinned because the upstream simply has no tags, versus packages that have tags but are intentionally tracking a branch.
+
 ## Focus Areas
 
 - package graph shape and how much work changes trigger downstream
@@ -35,6 +49,20 @@ Use this skill when package structure, plugins, or dependency configuration are 
 - umbrella modules using `@_exported import` that create hidden dependency chains
 - missing interface/implementation separation that blocks build parallelism
 - test targets depending on the app target instead of the module under test
+- Swift macro rebuild cascading: heavy use of Swift macros (e.g., TCA, swift-syntax-based libraries) can cause a trivial source change to cascade into near-full rebuilds because macro expansion invalidates downstream modules
+- `swift-syntax` building universally (all architectures) when no prebuilt binary is available, adding significant clean-build overhead
+- multi-platform build multiplication: adding a secondary platform target (e.g., watchOS) can cause shared SPM packages to build multiple times (e.g., iOS arm64, iOS x86_64, watchOS arm64), multiplying `SwiftCompile`, `SwiftEmitModule`, and `ScanDependencies` tasks
+
+## Modular SDK Migration Caveat
+
+Migrating a dependency from a monolithic target to a modular multi-target SDK (e.g., replacing one umbrella library with separate Core, RUM, Logs, Trace modules) does not automatically reduce build time. Modular targets increase the number of `SwiftCompile`, `SwiftEmitModule`, and `ScanDependencies` tasks because each target must be compiled, scanned, and emit its module independently. The build-time trade-off depends on the project's parallelism headroom and how many of the modular targets are actually needed.
+
+When considering a modular SDK migration:
+
+- Compare the total `SwiftCompile` task count before and after.
+- Benchmark both configurations before recommending the migration for build speed.
+- If the motivation is API surface reduction (importing only what you use), note that build time may stay flat or increase while import hygiene improves.
+- Only recommend modular SDK migration for build speed when the project currently compiles large portions of the monolithic SDK that it does not use, and the modular alternative lets it skip those unused portions entirely.
 
 ## Explicit Module Dependency Angle
 

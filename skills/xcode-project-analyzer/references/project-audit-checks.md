@@ -16,6 +16,22 @@ Use this reference when reviewing build-system configuration rather than source-
 - Should inputs and outputs be moved into `.xcfilelist` files?
 - Can the script skip debug builds, simulator builds, or unchanged inputs?
 - Would the script become parallelizable if dependency analysis were declared correctly?
+- Could a misconfigured linter or formatter script be touching file timestamps without changing content? This silently invalidates build inputs and forces replanning of every module.
+
+## Build Planning And Incremental Overhead Checks
+
+- Check whether "Planning Swift module" appears as a significant category in the Build Timing Summary. In projects with many modules this step can take up to 30s per module, sometimes exceeding clean build time.
+- If modules are replanned but no compiles are scheduled, suspect unexpected input modification (see Build Script Checks above).
+- Enable **Task Backtraces** (Xcode 16.4+) to diagnose why tasks re-run in incremental builds: Scheme Editor > Build tab > Build Debugging > enable "Task Backtraces." Expanding tasks in the build log will show a backtrace explaining what input change triggered the re-run.
+- Measure zero-change incremental build time as a baseline. Even with no source changes, builds incur fixed overhead: compute dependencies, send project description to build service, create build description, run script phases, codesign, and validate. If this baseline exceeds a few seconds, investigate each contributor.
+- Check whether codesigning and validation run on every build even when the build output has not changed.
+
+## Asset Catalog Checks
+
+- Asset catalog compilation (`CompileAssetCatalog`) is single-threaded per target. Multiple catalogs within the same target compile sequentially in a single process.
+- If asset catalog compilation appears as a significant timing category, recommend splitting assets into separate resource bundles across separate targets to enable parallel compilation.
+- Asset catalog compilation is not cacheable by the Xcode compilation cache (`CompileAssetCatalogVariant` is non-cacheable).
+- Check whether asset catalogs rebuild during incremental builds even when no assets changed. If so, investigate whether build inputs for the catalog step are being invalidated unexpectedly.
 
 ## Build Setting Checks
 
@@ -51,6 +67,6 @@ Do not flag language-migration settings (`SWIFT_STRICT_CONCURRENCY`, `SWIFT_UPCO
 
 ## Recommendation Prioritization
 
-- High: serial script bottlenecks, missing dependency metadata, or configuration drift causing redundant module builds.
-- Medium: stale target structure or noncritical scripts running too often.
+- High: serial script bottlenecks, missing dependency metadata, configuration drift causing redundant module builds, excessive "Planning Swift module" time, or scripts silently invalidating build inputs.
+- Medium: stale target structure, noncritical scripts running too often, slow asset catalog compilation blocking the critical path, or unnecessary codesigning on unchanged output.
 - Low: settings cleanup without strong evidence of current impact.

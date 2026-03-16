@@ -34,8 +34,9 @@ If the project has both clean-build and incremental-build pain, benchmark both. 
 2. Run one warm-up build if needed to validate that the command succeeds.
 3. Run 3 clean builds.
 4. Run 3 incremental builds without source changes between runs unless the developer is testing a specific edit loop.
-5. Save the raw results and summary into `.build-benchmark/`.
-6. Report medians and spread, not just the single fastest run.
+5. Run 1-3 zero-change builds (build immediately after a successful build with no edits). This measures the fixed overhead floor: dependency computation, project description transfer, build description creation, script phases, codesigning, and validation. A zero-change build that takes more than a few seconds indicates avoidable per-build overhead.
+6. Save the raw results and summary into `.build-benchmark/`.
+7. Report medians and spread, not just the single fastest run.
 
 ## Preferred Command Path
 
@@ -58,6 +59,7 @@ Return:
 
 - clean build median, min, max
 - incremental build median, min, max
+- zero-change build time (fixed overhead floor)
 - biggest timing-summary categories
 - environment details that could affect comparisons
 - path to the saved artifact
