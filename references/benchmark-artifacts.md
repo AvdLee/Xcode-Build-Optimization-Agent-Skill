@@ -52,6 +52,23 @@ Store raw `xcodebuild` output beside the JSON artifact whenever possible. That a
 - search for long type-check warnings
 - correlate build-system phases with recommendations
 
+## Measurement Caveats
+
+### COMPILATION_CACHING
+
+`COMPILATION_CACHING = YES` stores compiled artifacts so that repeated compilations of identical inputs are served from cache. The standard benchmark methodology (clean + build) clears derived data before each clean run, which invalidates the compilation cache. As a result, the benchmark script does not capture the benefit of compilation caching.
+
+The real benefit of compilation caching appears during:
+
+- Repeat clean builds where source files have not changed (e.g., after switching branches and switching back).
+- CI builds that share a persistent derived-data directory across runs.
+
+When reporting on COMPILATION_CACHING, note that the standard clean-build benchmark cannot measure its impact. Recommend enabling it based on the well-documented benefit rather than requiring a measurable delta from the benchmark script.
+
+### First-Run Variance
+
+The first clean build after the warmup cycle often runs 20-40% slower than subsequent clean builds due to cold OS-level caches (disk I/O, dynamic linker cache, etc.). The benchmark script mitigates this by running a warmup clean+build cycle before measured runs. If variance between the first and later clean runs is still high, prefer the median or min over the mean, and note the variance in the artifact's `notes` field.
+
 ## Shared Consumer Expectations
 
 Any skill reading a benchmark artifact should be able to identify:

@@ -14,6 +14,18 @@ Use this reference when package dependencies or package plugins are suspected bu
 - Measure whether plugins run during incremental builds even when no relevant input changed.
 - Call out plugins that return quickly but still add fixed overhead to every build.
 
+## Package Reference Verification
+
+- Before including any local package in a build-time recommendation, confirm it appears in the project's `XCLocalSwiftPackageReference` section of `project.pbxproj`.
+- A package existing under `Vendor/` or as a directory in the repo does not mean it is linked. Only referenced packages affect build time.
+- For remote packages, confirm the `XCRemoteSwiftPackageReference` entry exists and at least one `XCSwiftPackageProductDependency` links its product to a target.
+
+## Version Pin Feasibility
+
+- When recommending a switch from `branch:` to a tagged version, verify tags exist via `git ls-remote --tags <url>`.
+- If no tags exist, recommend pinning to a specific `revision:` hash for deterministic resolution.
+- Note the distinction: branch pins force network checks on every fresh resolve; revision pins are fully deterministic but do not benefit from semver range resolution.
+
 ## Binary And Remote Dependency Checks
 
 - Note binary target size and extraction overhead for clean environments.
@@ -63,6 +75,20 @@ Use this reference when package dependencies or package plugins are suspected bu
 - Shared test utilities (mocks, fixtures, helpers) belong in a dedicated `TestHelpers` module rather than being duplicated across test targets.
 - Keep test-only dependencies out of production target dependency lists.
 
+## Swift Macro Rebuild Impact
+
+- Projects that heavily use Swift macros (e.g., TCA, swift-syntax-based libraries) are susceptible to incremental build cascading where a trivial change rebuilds most of the app.
+- Macro expansion can invalidate downstream modules even when the expanded output has not changed, because the build system treats the macro input as a dependency.
+- Check whether `swift-syntax` is building universally (all architectures) when no prebuilt binary is available. This adds significant overhead to clean builds and CI. Verify with the build log whether the `swift-syntax` target compiles for more architectures than `ONLY_ACTIVE_ARCH` would suggest.
+- If macro-heavy packages dominate incremental build time, consider whether the macro-using code can be isolated into fewer, more stable modules to limit the invalidation blast radius.
+
+## Multi-Platform Build Multiplication
+
+- Adding a secondary platform target (e.g., watchOS, macOS Catalyst) can cause shared SPM packages to build multiple times -- once per platform and architecture combination.
+- A project with iOS and watchOS targets may build shared packages 3x: iOS arm64, iOS x86_64 (simulator), and watchOS arm64.
+- Check the build log for duplicate `SwiftCompile`, `SwiftEmitModule`, and `ScanDependencies` tasks for the same package across different platform/architecture slices.
+- If multi-platform multiplication is a significant contributor, consider whether secondary platform targets can use a subset of shared packages, or whether packages can be prebuilt as binary targets for secondary platforms.
+
 ## CI-Specific Checks
 
 - Fresh checkout cost
@@ -72,6 +98,6 @@ Use this reference when package dependencies or package plugins are suspected bu
 
 ## Recommendation Prioritization
 
-- High: package plugins or graph structure repeatedly inflating incremental builds, circular dependencies, umbrella re-exports causing cascading rebuilds.
-- Medium: configuration drift that causes duplicate module variants, oversized modules, missing interface/implementation separation.
+- High: package plugins or graph structure repeatedly inflating incremental builds, circular dependencies, umbrella re-exports causing cascading rebuilds, Swift macro cascading that causes near-full rebuilds from trivial changes.
+- Medium: configuration drift that causes duplicate module variants, oversized modules, missing interface/implementation separation, multi-platform build multiplication, `swift-syntax` building universally without prebuilt binary.
 - Low: clean-environment checkout costs that barely affect local iteration, minor transitive dependency cleanup.

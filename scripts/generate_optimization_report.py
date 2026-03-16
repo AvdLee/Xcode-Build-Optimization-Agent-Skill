@@ -95,6 +95,11 @@ _DEBUG_EXPECTATIONS: List[Tuple[str, str, str]] = [
     ("ONLY_ACTIVE_ARCH", "YES", "Building all architectures multiplies compile and link time"),
     ("DEBUG_INFORMATION_FORMAT", "dwarf", "dwarf-with-dsym generates a separate dSYM, adding overhead"),
     ("ENABLE_TESTABILITY", "YES", "Required for @testable import during development"),
+    ("EAGER_LINKING", "YES", "Allows linker to start before all compilation finishes, reducing wall-clock time"),
+]
+
+_GENERAL_EXPECTATIONS: List[Tuple[str, str, str]] = [
+    ("COMPILATION_CACHING", "YES", "Caches compilation results so repeat builds of unchanged inputs are served from cache"),
 ]
 
 _RELEASE_EXPECTATIONS: List[Tuple[str, str, str]] = [
@@ -128,6 +133,16 @@ def _check(actual: Optional[str], expected: str) -> bool:
     if expected == "-O" and actual in ("-O", '"-O"', '"-Osize"', "-Osize"):
         return True
     return actual.strip('"') == expected
+
+
+def _merged_project_settings(
+    project_configs: Dict[str, Dict[str, str]],
+) -> Dict[str, str]:
+    """Return a flat dict of all settings across Debug and Release for general checks."""
+    merged: Dict[str, str] = {}
+    for config in project_configs.values():
+        merged.update(config)
+    return merged
 
 
 def _audit_config(
@@ -239,6 +254,10 @@ def _section_settings_audit(
 
     lines.append("### Debug Configuration\n")
     lines.extend(_audit_config(project_configs.get("Debug", {}), _DEBUG_EXPECTATIONS, "Debug"))
+
+    lines.append("\n### General (All Configurations)\n")
+    merged = _merged_project_settings(project_configs)
+    lines.extend(_audit_config(merged, _GENERAL_EXPECTATIONS, "General"))
 
     lines.append("\n### Release Configuration\n")
     lines.extend(_audit_config(project_configs.get("Release", {}), _RELEASE_EXPECTATIONS, "Release"))

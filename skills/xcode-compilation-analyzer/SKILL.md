@@ -16,8 +16,10 @@ Use this skill when compile time, not just general project configuration, looks 
 
 ## What To Inspect
 
-- `Build Timing Summary` output from a clean build
+- `Build Timing Summary` output from clean and incremental builds
 - long-running `CompileSwiftSources` or per-file compilation tasks
+- `SwiftEmitModule` time -- can reach 60s+ after a single-line change in large modules; if it dominates incremental builds, the module is likely too large or macro-heavy
+- `Planning Swift module` time -- if this category is disproportionately large in incremental builds (up to 30s per module), it signals unexpected input invalidation or macro-related rebuild cascading
 - ad hoc runs with:
   - `-Xfrontend -warn-long-expression-type-checking=<ms>`
   - `-Xfrontend -warn-long-function-bodies=<ms>`

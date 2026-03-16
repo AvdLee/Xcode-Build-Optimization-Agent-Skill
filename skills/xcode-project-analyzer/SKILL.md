@@ -22,6 +22,9 @@ Use this skill for project- and target-level build inefficiencies that are unlik
 - derived-data churn or obviously invalidating custom steps
 - opportunities for parallelization
 - explicit module dependency settings and module-map readiness
+- "Planning Swift module" time in the Build Timing Summary -- if it dominates incremental builds, suspect unexpected input modification or macro-related invalidation
+- asset catalog compilation time, especially in targets with large or numerous catalogs
+- Task Backtraces (Xcode 16.4+: Scheme Editor > Build > Build Debugging) to diagnose why tasks re-run unexpectedly in incremental builds
 
 ## Build Settings Best Practices Audit
 
@@ -46,6 +49,9 @@ Review these items in every audit:
 - remove accidental serial bottlenecks in schemes
 - align build settings that cause unnecessary module variants
 - fix stale project structure that forces broader rebuilds than necessary
+- identify linters or formatters that touch file timestamps without changing content, silently invalidating build inputs and forcing module replanning
+- split large asset catalogs into separate resource bundles across targets to parallelize compilation
+- use Task Backtraces to pinpoint the exact input change that triggers unnecessary incremental work
 
 ## Reporting Format
 

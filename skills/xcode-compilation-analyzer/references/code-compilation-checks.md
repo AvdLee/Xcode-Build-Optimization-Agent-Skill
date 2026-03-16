@@ -18,6 +18,8 @@ Use this reference when a build benchmark shows compilation dominating build tim
 1. Is one file or expression dominating compile time?
 2. Is the issue mostly Swift type-checking, mixed-language bridging, or header import churn?
 3. Are multiple files in the same module paying the same module-setup cost repeatedly?
+4. Is `SwiftEmitModule` disproportionately large for any target? If a single-line change triggers 60s+ of module emission, the target is likely too large or heavily macro-dependent.
+5. Does `Planning Swift module` dominate incremental builds? If modules are replanned but no compiles are scheduled, build inputs are being invalidated unexpectedly.
 
 ## Checklist
 
@@ -77,6 +79,12 @@ Use this reference when a build benchmark shows compilation dominating build tim
 - Use type aliases to flatten complex generic stacks into readable names.
 - Prefer `some Protocol` (opaque return types) over unconstrained generics when the concrete type does not need to be visible to callers.
 
+### Module emission and planning overhead
+
+- Check `SwiftEmitModule` time in the Build Timing Summary. Large modules with many public symbols take longer to emit, and this cost is paid on every incremental build that touches the module.
+- If `SwiftEmitModule` exceeds compile time for the same target, the module's public API surface may be unnecessarily wide -- narrow access control or split the module.
+- Check `Planning Swift module` time. If it is significant in incremental builds, escalate to `xcode-project-analyzer` to investigate unexpected input invalidation or misconfigured scripts.
+
 ### Precompiled and prefix headers
 
 - For mixed-language projects with large Objective-C codebases, verify that prefix headers are not bloated with unnecessary imports. Every import in a prefix header is parsed for every translation unit.
@@ -95,3 +103,4 @@ Hand findings to `xcode-project-analyzer` when:
 - build scripts dominate instead of compilation
 - module reuse is blocked by project settings
 - target structure or explicit-module settings appear to be the real bottleneck
+- `Planning Swift module` overhead points to input invalidation or script-related causes rather than source complexity

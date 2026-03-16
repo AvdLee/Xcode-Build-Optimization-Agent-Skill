@@ -168,6 +168,16 @@ def main() -> int:
         if warmup.returncode != 0:
           sys.stderr.write(warmup.stdout + warmup.stderr)
           return warmup.returncode
+        # Warmup clean+build cycle primes OS-level caches (disk, dyld, etc.)
+        # so the first measured clean run is not penalised by cold caches.
+        warmup_clean = run_command([*base_command, "clean"])
+        if warmup_clean.returncode != 0:
+            sys.stderr.write(warmup_clean.stdout + warmup_clean.stderr)
+            return warmup_clean.returncode
+        warmup_rebuild = run_command([*base_command, "build"])
+        if warmup_rebuild.returncode != 0:
+            sys.stderr.write(warmup_rebuild.stdout + warmup_rebuild.stderr)
+            return warmup_rebuild.returncode
 
     runs = {"clean": [], "incremental": []}
 

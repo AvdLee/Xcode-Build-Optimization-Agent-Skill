@@ -134,3 +134,22 @@ Key takeaways:
 - It reports build counts, duration trends, and percentile-based metrics such as p75 and p95.
 - Team Build Insights adds machine, Xcode, and macOS comparisons for cross-team visibility.
 - This repository is best positioned as the point-in-time analyze-and-improve toolkit, while RocketSim is the monitor-over-time companion.
+
+## Swift Forums: Slow incremental builds because of planning swift module
+
+Source:
+
+- <https://forums.swift.org/t/slow-incremental-builds-because-of-planning-swift-module/84803>
+
+Key takeaways:
+
+- "Planning Swift module" can dominate incremental builds (up to 30s per module), sometimes exceeding clean build time.
+- Replanning every module without scheduling compiles is a sign that build inputs are being modified unexpectedly (e.g., a misconfigured linter touching file timestamps).
+- Enable **Task Backtraces** (Xcode 16.4+: Scheme Editor > Build > Build Debugging) to see why each task re-ran in an incremental build.
+- Heavy Swift macro usage (e.g., TCA / swift-syntax) can cause trivial changes to cascade into near-full rebuilds.
+- `swift-syntax` builds universally (all architectures) when no prebuilt binary is available, adding significant overhead.
+- `SwiftEmitModule` can take 60s+ after a single-line change in large modules.
+- Asset catalog compilation is single-threaded per target; splitting assets into separate bundles across targets enables parallel compilation.
+- Multi-platform targets (e.g., adding watchOS) can cause SPM packages to build 3x (iOS arm64, iOS x86_64, watchOS arm64).
+- Zero-change incremental builds still incur ~10s of fixed overhead: compute dependencies, send project description, create build description, script phases, codesigning, and validation.
+- Codesigning and validation run even when output has not changed.
