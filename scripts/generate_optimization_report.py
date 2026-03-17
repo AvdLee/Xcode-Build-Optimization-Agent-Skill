@@ -187,6 +187,63 @@ def _audit_consistency(
 
 
 # ---------------------------------------------------------------------------
+# Auto-generated recommendations from audit
+# ---------------------------------------------------------------------------
+
+
+def _auto_recommendations_from_audit(
+    project_configs: Dict[str, Dict[str, str]],
+) -> Dict[str, Any]:
+    """Generate basic recommendations from failing build settings audit checks."""
+    items: List[Dict[str, str]] = []
+
+    debug_settings = project_configs.get("Debug", {})
+    for key, expected, reason in _DEBUG_EXPECTATIONS:
+        if not _check(debug_settings.get(key), expected):
+            actual = debug_settings.get(key, "(unset)")
+            items.append({
+                "title": f"Set `{key}` to `{expected}` for Debug",
+                "category": "build-settings",
+                "observed_evidence": f"Current value: `{actual}`. {reason}.",
+                "estimated_impact": "Medium",
+                "confidence": "High",
+                "risk_level": "Low",
+            })
+
+    merged = {}
+    for config in project_configs.values():
+        merged.update(config)
+    for key, expected, reason in _GENERAL_EXPECTATIONS:
+        if not _check(merged.get(key), expected):
+            actual = merged.get(key, "(unset)")
+            items.append({
+                "title": f"Enable `{key} = {expected}`",
+                "category": "build-settings",
+                "observed_evidence": f"Current value: `{actual}`. {reason}.",
+                "estimated_impact": "High",
+                "confidence": "High",
+                "risk_level": "Low",
+            })
+
+    release_settings = project_configs.get("Release", {})
+    for key, expected, reason in _RELEASE_EXPECTATIONS:
+        if not _check(release_settings.get(key), expected):
+            actual = release_settings.get(key, "(unset)")
+            items.append({
+                "title": f"Set `{key}` to `{expected}` for Release",
+                "category": "build-settings",
+                "observed_evidence": f"Current value: `{actual}`. {reason}.",
+                "estimated_impact": "Medium",
+                "confidence": "High",
+                "risk_level": "Low",
+            })
+
+    if not items:
+        return {"recommendations": []}
+    return {"recommendations": items}
+
+
+# ---------------------------------------------------------------------------
 # Report generation
 # ---------------------------------------------------------------------------
 
@@ -405,6 +462,11 @@ def main() -> int:
             pbxproj = pbxproj_path.read_text()
             project_configs = _parse_project_level_configs(pbxproj)
             target_configs = _parse_target_configs(pbxproj)
+
+    if recommendations is None and project_configs:
+        auto = _auto_recommendations_from_audit(project_configs)
+        if auto["recommendations"]:
+            recommendations = auto
 
     sections = [
         "# Xcode Build Optimization Plan\n",

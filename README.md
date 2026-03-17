@@ -2,12 +2,19 @@
 
 Open-source Agent Skills for benchmarking and optimizing Xcode build performance across clean builds, incremental builds, compile hotspots, project settings, and Swift Package Manager overhead.
 
-This repository is the "analyze and improve now" toolkit:
+## Quick Start
 
-- benchmark both clean and incremental builds
-- identify the biggest code, project, and package bottlenecks
-- prioritize measured improvements
-- keep the workflow recommend-first until a developer explicitly approves changes
+Install the orchestrator skill:
+
+```bash
+npx skills add https://github.com/avdlee/xcode-build-optimization-agent-skill --skill xcode-build-orchestrator
+```
+
+Then open your Xcode project in your AI coding tool and say:
+
+> Use the Xcode build orchestrator to analyze build performance and come up with a plan for improvements.
+
+The agent will benchmark your clean and incremental builds, audit build settings, find compile hotspots, and produce an optimization plan at `.build-benchmark/optimization-plan.md`. No project files are modified until you explicitly approve changes.
 
 For long-term monitoring across days, machines, Xcode versions, and teams, use [RocketSim Build Insights](https://www.rocketsim.app/docs/features/build-insights/build-insights/) and [Team Build Insights](https://www.rocketsim.app/docs/features/build-insights/team-build-insights/).
 
@@ -27,71 +34,30 @@ For long-term monitoring across days, machines, Xcode versions, and teams, use [
 
 ## Included Skills
 
-This repo ships six installable skills:
+| Skill | Purpose |
+|-------|---------|
+| `xcode-build-orchestrator` | End-to-end workflow: benchmark, analyze, prioritize, approve, fix, re-benchmark |
+| `xcode-build-benchmark` | Repeatable clean and incremental build benchmarks with timestamped artifacts |
+| `xcode-compilation-analyzer` | Swift compile hotspot analysis and source-level recommendations |
+| `xcode-project-analyzer` | Build settings, scheme, script phase, and target dependency auditing |
+| `spm-build-analysis` | Package graph, plugin overhead, and module variant review |
+| `xcode-build-fixer` | Apply approved optimization changes and verify with benchmarks |
 
-- `xcode-build-benchmark`
-- `xcode-compilation-analyzer`
-- `xcode-project-analyzer`
-- `spm-build-analysis`
-- `xcode-build-orchestrator`
-- `xcode-build-fixer`
+The orchestrator is the recommended starting point -- it coordinates the other five skills automatically.
 
-### What Each Skill Does
-
-- `xcode-build-benchmark`: Runs repeatable clean and incremental build benchmarks and writes timestamped `.build-benchmark/` artifacts.
-- `xcode-compilation-analyzer`: Uses timing summaries and Swift frontend diagnostics to rank compile hotspots and source-level improvements.
-- `xcode-project-analyzer`: Audits schemes, target dependencies, scripts, and build settings for project-level wins.
-- `spm-build-analysis`: Reviews package graph shape, build plugins, module variants, and CI-sensitive dependency overhead.
-- `xcode-build-orchestrator`: Orchestrates the full workflow in two phases: analyze in plan mode (benchmark, run specialists, produce an optimization plan), then delegate approved fixes to the fixer in agent mode and re-benchmark.
-- `xcode-build-fixer`: Applies approved optimization changes (build settings, script phases, source-level fixes, SPM restructuring) and re-benchmarks to verify improvement.
-
-## Why Clean And Incremental Builds Both Matter
-
-Clean builds expose:
-
-- package and module setup cost
-- full project graph overhead
-- target structure and explicit-module issues
-
-Incremental builds expose:
-
-- edit-loop pain
-- run script bottlenecks
-- cache invalidation problems
-- repeated package-plugin overhead
-
-That distinction is central to this repo and follows both Apple's Xcode guidance and the SwiftLee workflow in [Build performance analysis for speeding up Xcode builds](https://www.avanderlee.com/optimization/analysing-build-performance-xcode/).
-
-## How To Use These Skills
+## Installation Options
 
 ### Option A: Using skills.sh
 
 Install a single skill:
 
 ```bash
-npx skills add https://github.com/avdlee/xcode-build-optimization-agent-skill --skill xcode-build-benchmark
+npx skills add https://github.com/avdlee/xcode-build-optimization-agent-skill --skill xcode-build-orchestrator
 ```
 
-Swap the skill name for any of the six skills under `skills/`:
-
-- `xcode-build-benchmark`
-- `xcode-compilation-analyzer`
-- `xcode-project-analyzer`
-- `spm-build-analysis`
-- `xcode-build-orchestrator`
-- `xcode-build-fixer`
-
-Start in plan mode and ask:
-
-> Use the xcode build orchestrator skill and analyze the current project for clean and incremental build improvements.
-
-The agent produces `.build-benchmark/optimization-plan.md`. Review it, check the approval boxes, then switch to agent mode to implement.
+Or install any of the six skills individually: `xcode-build-benchmark`, `xcode-compilation-analyzer`, `xcode-project-analyzer`, `spm-build-analysis`, `xcode-build-orchestrator`, `xcode-build-fixer`.
 
 ### Option B: Claude Code Plugin
-
-Install the shared plugin to make all six skills available under one namespace.
-
-#### Personal Usage
 
 1. Add the marketplace:
 
@@ -105,11 +71,7 @@ Install the shared plugin to make all six skills available under one namespace.
 /plugin install xcode-build-skills@xcode-build-skills
 ```
 
-The installed skill names will be available under the `xcode-build-skills` namespace.
-
-#### Project Configuration
-
-To enable the plugin for everyone working in a repository:
+To enable for everyone in a repository, add to your project configuration:
 
 ```json
 {
@@ -133,43 +95,38 @@ To enable the plugin for everyone working in a repository:
 2. Install or symlink the specific skill folder from `skills/` that you want.
 3. Ask your AI coding tool to use the corresponding skill.
 
-Useful docs:
+Useful docs: [Codex Skills](https://developers.openai.com/codex/skills/#where-to-save-skills) | [Claude Code Agent Skills](https://code.claude.com/en/skills) | [Cursor Skills](https://cursor.com/docs/context/skills#enabling-skills)
 
-- [Codex Skills](https://developers.openai.com/codex/skills/#where-to-save-skills)
-- [Claude Code Agent Skills](https://code.claude.com/en/skills)
-- [Cursor Skills](https://cursor.com/docs/context/skills#enabling-skills)
+## How It Works
 
-## Recommend-First Workflow
+The orchestrator uses a two-phase recommend-first workflow that separates analysis from implementation.
 
-The orchestrator uses a two-phase approach that separates analysis from implementation. This keeps the developer in control and produces a reviewable artifact before anything changes.
+**Phase 1 -- Analyze.** The agent benchmarks your project, runs all specialist analyses, and produces a markdown optimization plan at `.build-benchmark/optimization-plan.md`. The plan includes baseline benchmarks, a build settings audit, compilation diagnostics, and prioritized recommendations with an approval checklist. No project files are modified.
 
-### Phase 1 -- Analyze in plan mode
+> Use the Xcode build orchestrator to analyze build performance and come up with a plan for improvements.
 
-Start the orchestrator in **plan mode** (read-only). The agent benchmarks your project, runs all specialist analyses, and produces a markdown optimization plan at `.build-benchmark/optimization-plan.md`.
-
-The plan includes:
-
-- baseline benchmark results with a full timing summary table
-- a build settings audit with pass/fail indicators for Debug and Release
-- compilation diagnostics showing type-checking hotspots (if any)
-- prioritized recommendations with evidence, impact estimates, and risk levels
-- an approval checklist where you check the items you want implemented
-
-Example prompt for plan mode:
-
-> Use the xcode build orchestrator skill and analyze the current project for clean and incremental build improvements.
-
-The agent will benchmark, analyze, and stop after producing the plan. No project files are modified.
-
-### Phase 2 -- Execute in agent mode
-
-After reviewing the plan, switch to **agent mode** and ask the agent to implement the approved items. It reads the optimization plan, applies only the checked recommendations, re-benchmarks with the same inputs, and reports the measured improvement.
-
-Example prompt for agent mode:
+**Phase 2 -- Fix.** After reviewing the plan, check the approval boxes for the recommendations you want and ask the agent to implement them. It applies only the approved changes, re-benchmarks, and reports the measured improvement.
 
 > Implement the approved items from the optimization plan at .build-benchmark/optimization-plan.md, then re-benchmark to verify the improvements.
 
-This two-phase approach is suitable for real repositories where build settings, package manifests, and source changes should never be modified casually. The plan file becomes the evidence trail -- shareable with teammates, reviewable in pull requests, and diffable over time.
+The plan file becomes the evidence trail -- shareable with teammates, reviewable in pull requests, and diffable over time.
+
+## Why Clean And Incremental Builds Both Matter
+
+Clean builds expose:
+
+- package and module setup cost
+- full project graph overhead
+- target structure and explicit-module issues
+
+Incremental builds expose:
+
+- edit-loop pain
+- run script bottlenecks
+- cache invalidation problems
+- repeated package-plugin overhead
+
+That distinction is central to this repo and follows both Apple's Xcode guidance and the SwiftLee workflow in [Build performance analysis for speeding up Xcode builds](https://www.avanderlee.com/optimization/analysing-build-performance-xcode/).
 
 ## Shared Support Layer
 
@@ -197,6 +154,7 @@ xcode-build-optimization-agent-skill/
     build-benchmark.schema.json
   scripts/
     benchmark_builds.py
+    check_spm_pins.py
     diagnose_compilation.py
     generate_optimization_report.py
     render_recommendations.py

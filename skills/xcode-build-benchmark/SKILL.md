@@ -28,13 +28,17 @@ Confirm or infer:
 
 If the project has both clean-build and incremental-build pain, benchmark both. That is the default.
 
+## Worktree Considerations
+
+When benchmarking inside a git worktree, SPM packages with `exclude:` paths that reference gitignored directories (e.g., `__Snapshots__`) will cause `xcodebuild -resolvePackageDependencies` to crash. Create those missing directories before running any builds.
+
 ## Default Workflow
 
 1. Normalize the build command and note every flag that affects caching or module reuse.
 2. Run one warm-up build if needed to validate that the command succeeds.
 3. Run 3 clean builds.
-4. Run 3 incremental builds without source changes between runs unless the developer is testing a specific edit loop.
-5. Run 1-3 zero-change builds (build immediately after a successful build with no edits). This measures the fixed overhead floor: dependency computation, project description transfer, build description creation, script phases, codesigning, and validation. A zero-change build that takes more than a few seconds indicates avoidable per-build overhead.
+4. Run 3 zero-change builds (build immediately after a successful build with no edits). This measures the fixed overhead floor: dependency computation, project description transfer, build description creation, script phases, codesigning, and validation. A zero-change build that takes more than a few seconds indicates avoidable per-build overhead. Use the default `benchmark_builds.py` invocation (no `--touch-file` flag).
+5. Optionally run 3 incremental builds with a file touch to measure a real edit-rebuild loop. Use `--touch-file path/to/SomeFile.swift` to touch a representative source file before each build.
 6. Save the raw results and summary into `.build-benchmark/`.
 7. Report medians and spread, not just the single fastest run.
 
@@ -58,8 +62,8 @@ If you cannot use the helper script, run equivalent `xcodebuild` commands with `
 Return:
 
 - clean build median, min, max
-- incremental build median, min, max
-- zero-change build time (fixed overhead floor)
+- zero-change build median, min, max (fixed overhead floor)
+- incremental build median, min, max (if `--touch-file` was used)
 - biggest timing-summary categories
 - environment details that could affect comparisons
 - path to the saved artifact

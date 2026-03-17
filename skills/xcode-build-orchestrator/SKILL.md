@@ -23,8 +23,8 @@ The orchestration is designed as two distinct phases separated by developer revi
 
 Run this phase in agent mode because the agent needs to execute builds, run benchmark scripts, write benchmark artifacts, and generate the optimization report. However, treat Phase 1 as **recommend-only**: do not modify any project files, source files, packages, or build settings. The only files the agent creates during this phase are benchmark artifacts and the optimization plan inside `.build-benchmark/`.
 
-1. Collect the build target context: workspace or project, scheme, configuration, destination, and current pain point.
-2. Run `xcode-build-benchmark` to establish a baseline if no fresh benchmark exists.
+1. Collect the build target context: workspace or project, scheme, configuration, destination, and current pain point. When both `.xcworkspace` and `.xcodeproj` exist, prefer `.xcodeproj` unless the workspace contains sub-projects required for the build. Workspaces that reference external projects may fail if those projects are not checked out.
+2. Run `xcode-build-benchmark` to establish a baseline if no fresh benchmark exists. If the build fails to compile, check `git log` for a recent buildable commit. When working in a worktree, cherry-picking a targeted build fix from a feature branch is acceptable to reach a buildable state. If SPM packages reference gitignored directories in their `exclude:` paths (e.g., `__Snapshots__`), create those directories before building -- worktrees do not contain gitignored content and `xcodebuild -resolvePackageDependencies` will crash otherwise.
 3. Verify the benchmark artifact has non-empty `timing_summary_categories`. If empty, the timing summary parser may have failed -- re-parse the raw logs or inspect them manually.
 4. If incremental builds are the primary pain point and Xcode 16.4+ is available, recommend the developer enable **Task Backtraces** (Scheme Editor > Build tab > Build Debugging > "Task Backtraces"). This reveals why each task re-ran, which is critical for diagnosing unexpected replanning or input invalidation. Include any Task Backtrace evidence in the analysis.
 5. If `SwiftCompile`, `CompileC`, `SwiftEmitModule`, or `Planning Swift module` dominate the timing summary, run `diagnose_compilation.py` with the same project inputs to capture type-checking hotspots.
@@ -109,6 +109,10 @@ python3 scripts/benchmark_builds.py \
   --destination "platform=iOS Simulator,name=iPhone 16" \
   --output-dir .build-benchmark
 ```
+
+For macOS apps use `--destination "platform=macOS"`. For watchOS use `--destination "platform=watchOS Simulator,name=Apple Watch Series 10"`. For tvOS use `--destination "platform=tvOS Simulator,name=Apple TV"`. Omit `--destination` to use the scheme's default.
+
+To measure real incremental builds (file-touched rebuild) instead of zero-change builds, add `--touch-file path/to/SomeFile.swift`.
 
 ### Compilation Diagnostics
 

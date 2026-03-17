@@ -32,7 +32,11 @@ Before including any local package in a recommendation, verify that it is actual
 
 When recommending version pins for branch-tracked dependencies:
 
-- Run `git ls-remote --tags` against the repository to confirm tagged versions exist before recommending a pin-to-tag change.
+- Use the helper script to scan all branch-pinned dependencies at once:
+  ```bash
+  python3 scripts/check_spm_pins.py --project App.xcodeproj
+  ```
+  This checks `git ls-remote --tags` for each branch-pinned package and reports which have tags available for pinning.
 - If no tags exist, recommend pinning to a specific commit revision hash for determinism instead.
 - Note which packages are branch-pinned because the upstream simply has no tags, versus packages that have tags but are intentionally tracking a branch.
 
