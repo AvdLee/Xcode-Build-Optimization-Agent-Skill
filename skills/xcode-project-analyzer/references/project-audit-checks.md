@@ -26,6 +26,20 @@ Use this reference when reviewing build-system configuration rather than source-
 - Measure zero-change incremental build time as a baseline. Even with no source changes, builds incur fixed overhead: compute dependencies, send project description to build service, create build description, run script phases, codesign, and validate. If this baseline exceeds a few seconds, investigate each contributor.
 - Check whether codesigning and validation run on every build even when the build output has not changed.
 
+## Zero-Change Build Overhead Analysis
+
+When a zero-change build (no edits, immediate rebuild) takes more than a few seconds, the overhead comes from fixed-cost phases rather than compilation. Investigate these categories in the Build Timing Summary:
+
+- **PhaseScriptExecution**: Script phases with `alwaysOutOfDate = 1` or missing input/output declarations run on every build regardless of changes. Linters, formatters, and upload scripts are common offenders.
+- **CodeSign**: Codesigning runs on every build for the app target and any embedded frameworks. Time scales with the number of signed binaries.
+- **ValidateEmbeddedBinary**: Validates embedded binaries against the host app's provisioning profile. Runs unconditionally.
+- **CopySwiftLibs**: Copies Swift standard libraries into the app bundle. Runs even when nothing changed.
+- **RegisterWithLaunchServices**: Registers the built app with Launch Services. Fast but present in every build.
+- **ProcessInfoPlistFile**: Re-processes Info.plist files. Time scales with the number of targets.
+- **ExtractAppIntentsMetadata**: Extracts App Intents metadata from all targets. If the project does not use App Intents, this work is unnecessary overhead -- investigate whether this phase can be reduced by ensuring only targets that declare App Intents are processed.
+
+A zero-change build above 5 seconds on Apple Silicon typically indicates script phase overhead or an excessive number of targets requiring codesign and validation passes.
+
 ## Asset Catalog Checks
 
 - Asset catalog compilation (`CompileAssetCatalog`) is single-threaded per target. Multiple catalogs within the same target compile sequentially in a single process.
@@ -68,5 +82,5 @@ Do not flag language-migration settings (`SWIFT_STRICT_CONCURRENCY`, `SWIFT_UPCO
 ## Recommendation Prioritization
 
 - High: serial script bottlenecks, missing dependency metadata, configuration drift causing redundant module builds, excessive "Planning Swift module" time, or scripts silently invalidating build inputs.
-- Medium: stale target structure, noncritical scripts running too often, slow asset catalog compilation blocking the critical path, or unnecessary codesigning on unchanged output.
+- Medium: stale target structure, noncritical scripts running too often, slow asset catalog compilation blocking the critical path, unnecessary codesigning on unchanged output, or significant `ExtractAppIntentsMetadata` time in projects without App Intents.
 - Low: settings cleanup without strong evidence of current impact.

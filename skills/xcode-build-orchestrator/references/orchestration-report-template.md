@@ -16,12 +16,14 @@ Use this structure when the orchestrator consolidates benchmark evidence and spe
 
 ## Baseline Benchmarks
 
-| Metric | Clean | Incremental |
+| Metric | Clean | Zero-Change |
 |--------|-------|-------------|
 | Median | 0.000s | 0.000s |
 | Min | 0.000s | 0.000s |
 | Max | 0.000s | 0.000s |
 | Runs | 3 | 3 |
+
+> **Terminology:** "Zero-Change" = rebuild with no edits (measures fixed overhead). Use `--touch-file` in the benchmark script to measure true incremental builds where a source file is modified.
 
 ### Clean Build Timing Summary
 
@@ -87,9 +89,9 @@ Compare the new medians against the baseline to verify improvements.
 ## Verification (post-approval)
 
 - Post-change clean median:
-- Post-change incremental median:
+- Post-change zero-change median:
 - Clean delta:
-- Incremental delta:
+- Zero-change delta:
 
 ## Remaining follow-up ideas
 - Item:

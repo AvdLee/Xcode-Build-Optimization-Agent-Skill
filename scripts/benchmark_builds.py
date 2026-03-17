@@ -27,6 +27,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--repeats", type=int, default=3, help="Measured runs per build type")
     parser.add_argument("--skip-warmup", action="store_true", help="Skip the validation build")
     parser.add_argument(
+        "--touch-file",
+        help="Path to a source file to touch before each incremental build. "
+        "When provided, measures a real edit-rebuild loop instead of a zero-change build.",
+    )
+    parser.add_argument(
         "--extra-arg",
         action="append",
         default=[],
@@ -190,9 +195,21 @@ def main() -> int:
             return clean_result.returncode
         runs["clean"].append(measure_build(base_command, artifact_stem, output_dir, "clean", index))
 
+    incremental_label = "incremental"
+    if args.touch_file:
+        touch_path = Path(args.touch_file)
+        if not touch_path.exists():
+            sys.stderr.write(f"--touch-file path does not exist: {touch_path}\n")
+            return 1
+        incremental_label = "incremental"
+    else:
+        incremental_label = "zero-change"
+
     for index in range(1, args.repeats + 1):
+        if args.touch_file:
+            touch_path.touch()
         runs["incremental"].append(
-            measure_build(base_command, artifact_stem, output_dir, "incremental", index)
+            measure_build(base_command, artifact_stem, output_dir, incremental_label, index)
         )
 
     artifact = {
@@ -218,7 +235,7 @@ def main() -> int:
             "clean": stats_for(runs["clean"]),
             "incremental": stats_for(runs["incremental"]),
         },
-        "notes": [],
+        "notes": [f"touch-file: {args.touch_file}"] if args.touch_file else [],
     }
 
     artifact_path = output_dir / f"{artifact_stem}.json"
@@ -226,7 +243,8 @@ def main() -> int:
 
     print(f"Saved benchmark artifact: {artifact_path}")
     print(f"Clean median: {artifact['summary']['clean']['median_seconds']}s")
-    print(f"Incremental median: {artifact['summary']['incremental']['median_seconds']}s")
+    inc_label = "Incremental" if args.touch_file else "Zero-change"
+    print(f"{inc_label} median: {artifact['summary']['incremental']['median_seconds']}s")
     return 0
 
 
