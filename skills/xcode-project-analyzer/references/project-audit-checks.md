@@ -81,6 +81,8 @@ Do not flag language-migration settings (`SWIFT_STRICT_CONCURRENCY`, `SWIFT_UPCO
 
 ## Recommendation Prioritization
 
+Qualify every estimated impact with wall-clock framing. High-priority items should be those likely to reduce the developer's actual wait time, not just cumulative task totals. If the impact on wait time is uncertain, say so.
+
 - High: serial script bottlenecks, missing dependency metadata, configuration drift causing redundant module builds, excessive "Planning Swift module" time, or scripts silently invalidating build inputs.
 - Medium: stale target structure, noncritical scripts running too often, slow asset catalog compilation blocking the critical path, unnecessary codesigning on unchanged output, or significant `ExtractAppIntentsMetadata` time in projects without App Intents.
 - Low: settings cleanup without strong evidence of current impact.

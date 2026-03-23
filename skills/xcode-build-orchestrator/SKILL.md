@@ -9,11 +9,12 @@ Use this skill as the recommend-first entrypoint for end-to-end Xcode build opti
 
 ## Non-Negotiable Rules
 
+- Wall-clock build time (how long the developer waits) is the primary success metric. Every recommendation must state its expected impact on the developer's actual wait time.
 - Start in recommendation mode.
 - Benchmark before making changes.
 - Do not modify project files, source files, packages, or scripts without explicit developer approval.
 - Preserve the evidence trail for every recommendation.
-- Re-benchmark after approved changes and report the delta.
+- Re-benchmark after approved changes and report the wall-clock delta.
 
 ## Two-Phase Workflow
 
@@ -27,7 +28,7 @@ Run this phase in agent mode because the agent needs to execute builds, run benc
 2. Run `xcode-build-benchmark` to establish a baseline if no fresh benchmark exists. If the build fails to compile, check `git log` for a recent buildable commit. When working in a worktree, cherry-picking a targeted build fix from a feature branch is acceptable to reach a buildable state. If SPM packages reference gitignored directories in their `exclude:` paths (e.g., `__Snapshots__`), create those directories before building -- worktrees do not contain gitignored content and `xcodebuild -resolvePackageDependencies` will crash otherwise.
 3. Verify the benchmark artifact has non-empty `timing_summary_categories`. If empty, the timing summary parser may have failed -- re-parse the raw logs or inspect them manually.
 4. If incremental builds are the primary pain point and Xcode 16.4+ is available, recommend the developer enable **Task Backtraces** (Scheme Editor > Build tab > Build Debugging > "Task Backtraces"). This reveals why each task re-ran, which is critical for diagnosing unexpected replanning or input invalidation. Include any Task Backtrace evidence in the analysis.
-5. If `SwiftCompile`, `CompileC`, `SwiftEmitModule`, or `Planning Swift module` dominate the timing summary, run `diagnose_compilation.py` with the same project inputs to capture type-checking hotspots.
+5. Determine whether compile tasks are likely blocking wall-clock progress or just consuming parallel CPU time. Compare the sum of all timing-summary category seconds against the wall-clock median: if the sum is 2x+ the median, most work is parallelized and compile hotspot fixes are unlikely to reduce wait time. If `SwiftCompile`, `CompileC`, `SwiftEmitModule`, or `Planning Swift module` dominate the timing summary **and** appear likely to be on the critical path, run `diagnose_compilation.py` to capture type-checking hotspots. If they are parallelized, still run diagnostics but label findings as "parallel efficiency improvements" rather than "build time improvements."
 6. Run the specialist analyses that fit the evidence by reading each skill's SKILL.md and applying its workflow:
    - [`xcode-compilation-analyzer`](../xcode-compilation-analyzer/SKILL.md)
    - [`xcode-project-analyzer`](../xcode-project-analyzer/SKILL.md)
@@ -49,28 +50,36 @@ Run this phase in agent mode after the developer has reviewed and approved recom
 
 ## Prioritization Rules
 
-Rank items using:
+The goal is to reduce how long the developer waits for builds to finish.
 
-- measured evidence strength
-- expected impact on incremental builds
-- expected impact on clean builds
-- implementation risk
-- confidence
+1. Identify the developer's primary pain (clean build, incremental build, or both) and the measured wall-clock median.
+2. Determine what is likely **blocking** wall-clock progress:
+   - If the sum of all timing-summary category seconds is 2x+ the wall-clock median, most work is parallelized. Compile hotspot fixes are unlikely to reduce wait time.
+   - If a single serial category (e.g. `PhaseScriptExecution`, `CompileAssetCatalog`, `CodeSign`) accounts for a large fraction of wall-clock, that is the real bottleneck.
+   - If `Planning Swift module` or `SwiftEmitModule` dominates incremental builds, the cause is likely invalidation or module size, not individual file compile speed.
+3. Rank recommendations by likely wall-time savings, not cumulative task reduction.
+4. Source-level compile fixes should not outrank project/graph/configuration fixes unless evidence suggests they are on the critical path.
 
-Prefer changes that are:
+Prefer changes that are measurable, reversible, and low-risk.
 
-- measurable
-- reversible
-- low-risk
-- likely to improve the most common developer loop first
+## Recommendation Impact Language
+
+Every recommendation presented to the developer must include one of these impact statements:
+
+- "Expected to reduce your [clean/incremental] build by approximately X seconds."
+- "Reduces parallel compile work but is unlikely to reduce your build wait time because other tasks take equally long."
+- "Impact on wait time is uncertain -- re-benchmark after applying to confirm."
+- "No wait-time improvement expected. The benefit is [deterministic builds / faster branch switching / reduced CI cost]."
+
+Never quote cumulative task-time savings as the headline impact. If a change reduces 5 seconds of parallel compile work but another equally long task still runs, the developer's wait time does not change.
 
 ## Approval Gate
 
 Before implementing anything, present a short approval list that includes:
 
 - recommendation name
+- expected wait-time impact (using the impact language above)
 - evidence summary
-- estimated impact
 - affected files or settings
 - whether the change is low, medium, or high risk
 
@@ -87,14 +96,15 @@ After approval, delegate to `xcode-build-fixer`:
 
 ## Final Report
 
-The final report must include:
+Lead with the wall-clock result in plain language, e.g.: "Your clean build now takes 82s (was 86s) -- 4s faster." Then include:
 
-- baseline clean and incremental medians
-- post-change clean and incremental medians
-- absolute and percentage deltas
+- baseline clean and incremental wall-clock medians
+- post-change clean and incremental wall-clock medians
+- absolute and percentage wall-clock deltas
 - what changed
 - what was intentionally left unchanged
 - confidence notes if noise prevents a strong conclusion
+- if cumulative task metrics improved but wall-clock did not, say plainly: "Compiler workload decreased but build wait time did not improve. This is expected when Xcode runs these tasks in parallel with other equally long work."
 - a ready-to-paste community results row and a link to open a PR (see the report template)
 
 ## Preferred Command Paths
