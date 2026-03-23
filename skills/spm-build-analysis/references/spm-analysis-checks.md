@@ -98,6 +98,8 @@ Use this reference when package dependencies or package plugins are suspected bu
 
 ## Recommendation Prioritization
 
+Qualify every estimated impact with wall-clock framing. High-priority items should be those likely to reduce the developer's actual wait time, not just cumulative task totals. If the impact on wait time is uncertain, say so.
+
 - High: package plugins or graph structure repeatedly inflating incremental builds, circular dependencies, umbrella re-exports causing cascading rebuilds, Swift macro cascading that causes near-full rebuilds from trivial changes.
 - Medium: configuration drift that causes duplicate module variants, oversized modules, missing interface/implementation separation, multi-platform build multiplication, `swift-syntax` building universally without prebuilt binary.
 - Low: clean-environment checkout costs that barely affect local iteration, minor transitive dependency cleanup.

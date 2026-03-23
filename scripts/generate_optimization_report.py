@@ -293,6 +293,12 @@ def _section_baseline(benchmark: Dict[str, Any]) -> str:
             count = len(runs) or 1
             ranked = sorted(all_cats.items(), key=lambda x: x[1]["seconds"], reverse=True)
             lines.append(f"\n### {build_type.title()} Build Timing Summary\n")
+            lines.append(
+                "> **Note:** These are aggregated task times across all CPU cores. "
+                "Because Xcode runs many tasks in parallel, these totals typically exceed "
+                "the actual build wait time shown above. A large number here does not mean "
+                "it is blocking your build.\n"
+            )
             lines.append("| Category | Tasks | Seconds |")
             lines.append("|----------|------:|--------:|")
             for name, data in ranked:
@@ -365,6 +371,7 @@ def _section_recommendations(recommendations: Optional[Dict[str, Any]]) -> str:
         title = item.get("title", "Untitled")
         lines.append(f"### {i}. {title}\n")
         for field, label in [
+            ("wait_time_impact", "Wait-Time Impact"),
             ("category", "Category"),
             ("observed_evidence", "Evidence"),
             ("estimated_impact", "Impact"),
@@ -394,9 +401,11 @@ def _section_approval(recommendations: Optional[Dict[str, Any]]) -> str:
     lines = ["## Approval Checklist\n"]
     for i, item in enumerate(items, 1):
         title = item.get("title", "Untitled")
+        wait_impact = item.get("wait_time_impact", "")
         impact = item.get("estimated_impact", "")
         risk = item.get("risk_level", "")
-        lines.append(f"- [ ] **{i}. {title}** -- Impact: {impact} | Risk: {risk}")
+        impact_str = wait_impact if wait_impact else impact
+        lines.append(f"- [ ] **{i}. {title}** -- Impact: {impact_str} | Risk: {risk}")
     return "\n".join(lines)
 
 
@@ -421,7 +430,8 @@ def _section_next_steps(benchmark: Dict[str, Any]) -> str:
         lines.append(f'  --destination "{build["destination"]}" \\')
     lines.append("  --output-dir .build-benchmark")
     lines.append("```\n")
-    lines.append("Compare the new medians against the baseline to verify improvements.")
+    lines.append("Compare the new wall-clock medians against the baseline. Report results as:")
+    lines.append('"Your [clean/incremental] build now takes X.Xs (was Y.Ys) -- Z.Zs faster/slower."')
     return "\n".join(lines)
 
 
