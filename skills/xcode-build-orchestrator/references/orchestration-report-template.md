@@ -16,14 +16,14 @@ Use this structure when the orchestrator consolidates benchmark evidence and spe
 
 ## Baseline Benchmarks
 
-| Metric | Clean | Zero-Change |
-|--------|-------|-------------|
-| Median | 0.000s | 0.000s |
-| Min | 0.000s | 0.000s |
-| Max | 0.000s | 0.000s |
-| Runs | 3 | 3 |
+| Metric | Clean | Cached Clean | Zero-Change |
+|--------|-------|-------------|-------------|
+| Median | 0.000s | 0.000s | 0.000s |
+| Min | 0.000s | 0.000s | 0.000s |
+| Max | 0.000s | 0.000s | 0.000s |
+| Runs | 3 | 3 | 3 |
 
-> **Terminology:** "Zero-Change" = rebuild with no edits (measures fixed overhead). Use `--touch-file` in the benchmark script to measure true incremental builds where a source file is modified.
+> **Cached Clean** = clean build with a warm compilation cache. This is the realistic scenario for branch switching, pulling changes, or Clean Build Folder. Only present when `COMPILATION_CACHING = YES` is detected. "Zero-Change" = rebuild with no edits (measures fixed overhead). Use `--touch-file` in the benchmark script to measure true incremental builds where a source file is modified.
 
 ### Clean Build Timing Summary
 
@@ -93,8 +93,10 @@ Compare the new wall-clock medians against the baseline. Report results as:
 ## Verification (post-approval)
 
 - Post-change clean build: X.Xs (was Y.Ys) -- Z.Zs faster/slower
+- Post-change cached clean build: X.Xs (was Y.Ys) -- Z.Zs faster/slower (when COMPILATION_CACHING enabled)
 - Post-change incremental build: X.Xs (was Y.Ys) -- Z.Zs faster/slower
 - If cumulative task metrics improved but wall-clock did not: "Compiler workload decreased but build wait time did not improve. This is expected when Xcode runs these tasks in parallel with other equally long work."
+- If standard clean builds are slower but cached clean builds are faster: "Standard clean builds show overhead from compilation cache population. Cached clean builds (the realistic developer workflow) are faster, confirming the net benefit."
 
 ## Remaining follow-up ideas
 - Item:
@@ -105,7 +107,7 @@ Compare the new wall-clock medians against the baseline. Report results as:
 Add your improvement to the community results table by opening a pull request.
 Copy the row below and append it to the table in README.md:
 
-| <project-name> | <baseline-incremental> | <post-change-incremental> | <baseline-clean> | <post-change-clean> |
+| <project-name> | <baseline-incremental> | <post-change-incremental> | <baseline-clean> | <post-change-clean> | <baseline-cached-clean> | <post-change-cached-clean> |
 
 Open a PR: https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill/edit/main/README.md
 ```
@@ -117,6 +119,6 @@ Open a PR: https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill/edit/m
 - If results are noisy, say that the verification is inconclusive instead of overstating success.
 - The Build Settings Audit scope is strictly build performance. Do not flag language-migration settings like `SWIFT_STRICT_CONCURRENCY` or `SWIFT_UPCOMING_FEATURE_*`.
 - The Compilation Diagnostics section is populated by `diagnose_compilation.py`. If not run, note that it was skipped.
-- `COMPILATION_CACHING` improvements cannot be captured by the standard clean-build benchmark because `xcodebuild clean` invalidates the cache. Note this in the verification section when the setting was changed. Recommend keeping it enabled based on documented benefit.
+- `COMPILATION_CACHING` improvements are captured by the **cached clean** benchmark phase, which measures clean builds with a warm compilation cache. Standard clean builds may show overhead from cache population; this is expected. Use the cached clean metric as the primary comparison when evaluating this setting.
 - When recommending SPM version pins, verify that tagged versions exist (`git ls-remote --tags`) before suggesting a pin-to-tag change. If no tags exist, recommend pinning to a commit revision hash.
 - Before including a local package in a build-time recommendation, verify it is referenced in `project.pbxproj` via `XCLocalSwiftPackageReference`. Packages that exist on disk but are not linked do not affect build time.

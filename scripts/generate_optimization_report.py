@@ -268,18 +268,40 @@ def _section_context(benchmark: Dict[str, Any]) -> str:
 def _section_baseline(benchmark: Dict[str, Any]) -> str:
     summary = benchmark.get("summary", {})
     clean = summary.get("clean", {})
+    cached_clean = summary.get("cached_clean", {})
     incremental = summary.get("incremental", {})
-    lines = [
-        "## Baseline Benchmarks\n",
-        f"| Metric | Clean | Incremental |",
-        f"|--------|-------|-------------|",
-        f"| Median | {clean.get('median_seconds', 0):.3f}s | {incremental.get('median_seconds', 0):.3f}s |",
-        f"| Min | {clean.get('min_seconds', 0):.3f}s | {incremental.get('min_seconds', 0):.3f}s |",
-        f"| Max | {clean.get('max_seconds', 0):.3f}s | {incremental.get('max_seconds', 0):.3f}s |",
-        f"| Runs | {clean.get('count', 0)} | {incremental.get('count', 0)} |",
-    ]
+    has_cached = bool(cached_clean and cached_clean.get("count", 0) > 0)
 
-    for build_type in ("clean", "incremental"):
+    if has_cached:
+        lines = [
+            "## Baseline Benchmarks\n",
+            "| Metric | Clean | Cached Clean | Incremental |",
+            "|--------|-------|-------------|-------------|",
+            f"| Median | {clean.get('median_seconds', 0):.3f}s | {cached_clean.get('median_seconds', 0):.3f}s | {incremental.get('median_seconds', 0):.3f}s |",
+            f"| Min | {clean.get('min_seconds', 0):.3f}s | {cached_clean.get('min_seconds', 0):.3f}s | {incremental.get('min_seconds', 0):.3f}s |",
+            f"| Max | {clean.get('max_seconds', 0):.3f}s | {cached_clean.get('max_seconds', 0):.3f}s | {incremental.get('max_seconds', 0):.3f}s |",
+            f"| Runs | {clean.get('count', 0)} | {cached_clean.get('count', 0)} | {incremental.get('count', 0)} |",
+        ]
+        lines.append(
+            "\n> **Cached Clean** = clean build with a warm compilation cache. "
+            "This is the realistic scenario for branch switching, pulling changes, or "
+            "Clean Build Folder. The compilation cache lives outside DerivedData and "
+            "survives product deletion.\n"
+        )
+    else:
+        lines = [
+            "## Baseline Benchmarks\n",
+            "| Metric | Clean | Incremental |",
+            "|--------|-------|-------------|",
+            f"| Median | {clean.get('median_seconds', 0):.3f}s | {incremental.get('median_seconds', 0):.3f}s |",
+            f"| Min | {clean.get('min_seconds', 0):.3f}s | {incremental.get('min_seconds', 0):.3f}s |",
+            f"| Max | {clean.get('max_seconds', 0):.3f}s | {incremental.get('max_seconds', 0):.3f}s |",
+            f"| Runs | {clean.get('count', 0)} | {incremental.get('count', 0)} |",
+        ]
+
+    build_types = ["clean", "cached_clean", "incremental"] if has_cached else ["clean", "incremental"]
+    label_map = {"clean": "Clean", "cached_clean": "Cached Clean", "incremental": "Incremental"}
+    for build_type in build_types:
         runs = benchmark.get("runs", {}).get(build_type, [])
         all_cats: Dict[str, Dict] = {}
         for run in runs:
@@ -292,7 +314,8 @@ def _section_baseline(benchmark: Dict[str, Any]) -> str:
         if all_cats:
             count = len(runs) or 1
             ranked = sorted(all_cats.items(), key=lambda x: x[1]["seconds"], reverse=True)
-            lines.append(f"\n### {build_type.title()} Build Timing Summary\n")
+            label = label_map.get(build_type, build_type.title())
+            lines.append(f"\n### {label} Build Timing Summary\n")
             lines.append(
                 "> **Note:** These are aggregated task times across all CPU cores. "
                 "Because Xcode runs many tasks in parallel, these totals typically exceed "

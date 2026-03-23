@@ -216,8 +216,8 @@ Real-world improvements reported by developers who used these skills. Add your o
 
 The `xcode-build-orchestrator` generates your table row at the end of every optimization run, so contributing is a single copy-paste.
 
-| App | Incremental Before | Incremental After | Clean Before | Clean After |
-|-----|-------------------:|------------------:|-------------:|------------:|
+| App | Incremental Before | Incremental After | Clean Before | Clean After | Cached Clean Before | Cached Clean After |
+|-----|-------------------:|------------------:|-------------:|------------:|--------------------:|-------------------:|
 
 ## Contributing
 
