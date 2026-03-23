@@ -107,7 +107,7 @@ Compare the new wall-clock medians against the baseline. Report results as:
 Add your improvement to the community results table by opening a pull request.
 Copy the row below and append it to the table in README.md:
 
-| <project-name> | <baseline-incremental> | <post-change-incremental> | <baseline-clean> | <post-change-clean> | <baseline-cached-clean> | <post-change-cached-clean> |
+| <project-name> | X.Xs → X.Xs (-X.Xs / X% faster) | X.Xs → X.Xs (-X.Xs / X% faster) |
 
 Open a PR: https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill/edit/main/README.md
 ```

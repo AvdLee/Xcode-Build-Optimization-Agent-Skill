@@ -16,6 +16,8 @@ Then open your Xcode project in your AI coding tool and say:
 
 The agent will benchmark your clean and incremental builds, audit build settings, find compile hotspots, and produce an optimization plan at `.build-benchmark/optimization-plan.md`. No project files are modified until you explicitly approve changes.
 
+[See results of projects that used this skill →](#community-results)
+
 For long-term monitoring across days, machines, Xcode versions, and teams, use [RocketSim Build Insights](https://www.rocketsim.app/docs/features/build-insights/build-insights/) and [Team Build Insights](https://www.rocketsim.app/docs/features/build-insights/team-build-insights/).
 
 ## See Also My Other Skills
@@ -212,12 +214,13 @@ If you want to catch regressions earlier and see whether your build times are im
 
 ## Community Results
 
-Real-world improvements reported by developers who used these skills. Add your own results by opening a pull request.
+Real-world improvements reported by developers who used these skills. Add your own by opening a pull request.
 
 The `xcode-build-orchestrator` generates your table row at the end of every optimization run, so contributing is a single copy-paste.
 
-| App | Incremental Before | Incremental After | Clean Before | Clean After | Cached Clean Before | Cached Clean After |
-|-----|-------------------:|------------------:|-------------:|------------:|--------------------:|-------------------:|
+| App | Clean Build | Incremental Build |
+|-----|------------|-------------------|
+| StockAnalyzer | 41.5s → 33.2s (-8.3s / 20% faster) | 5.3s → 3.6s (-1.7s / 32% faster) |
 
 ## Contributing
 
