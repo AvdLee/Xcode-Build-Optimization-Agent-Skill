@@ -179,6 +179,25 @@ def measure_build(
     }
 
 
+def _delete_build_products(dd_path: Path) -> None:
+    """Delete Build/ subdirectories within DerivedData, preserving SourcePackages/.
+
+    This matches Xcode's "Clean Build Folder" (Shift+Cmd+K), which removes
+    build products but keeps resolved SPM packages and other DerivedData
+    metadata.  The system compilation cache is stored outside DerivedData
+    and is unaffected.
+    """
+    if not dd_path.exists():
+        return
+    for child in dd_path.iterdir():
+        build_dir = child / "Build" if child.is_dir() else None
+        if build_dir and build_dir.exists():
+            shutil.rmtree(build_dir, ignore_errors=True)
+    top_build = dd_path / "Build"
+    if top_build.exists():
+        shutil.rmtree(top_build, ignore_errors=True)
+
+
 def main() -> int:
     args = parse_args()
     output_dir = Path(args.output_dir)
@@ -217,9 +236,10 @@ def main() -> int:
     # When COMPILATION_CACHING is enabled, the compilation cache lives outside
     # DerivedData and survives product deletion.  We measure "cached clean"
     # builds by pointing DerivedData at a temp directory, warming the cache with
-    # one build, then deleting the DerivedData directory (but not the cache)
-    # before each measured rebuild.  This captures the realistic scenario:
-    # branch switching, pulling changes, or Clean Build Folder.
+    # one build, then deleting only the Build/ subdirectory before each measured
+    # rebuild.  This preserves resolved SPM packages (SourcePackages/) while
+    # removing all build products -- matching what "Clean Build Folder" does in
+    # Xcode.  The system compilation cache remains intact.
     should_cached_clean = not args.no_cached_clean and detect_compilation_caching(base_command)
     if should_cached_clean:
         dd_path = Path(args.derived_data_path) if args.derived_data_path else Path(
@@ -238,7 +258,7 @@ def main() -> int:
     if should_cached_clean:
         runs["cached_clean"] = []
         for index in range(1, args.repeats + 1):
-            shutil.rmtree(dd_path, ignore_errors=True)
+            _delete_build_products(dd_path)
             runs["cached_clean"].append(
                 measure_build(cached_cmd, artifact_stem, output_dir, "cached-clean", index)
             )
