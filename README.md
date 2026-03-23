@@ -12,7 +12,7 @@ npx skills add https://github.com/avdlee/xcode-build-optimization-agent-skill --
 
 Then open your Xcode project in your AI coding tool and say:
 
-> Use the Xcode build orchestrator to analyze build performance and come up with a plan for improvements.
+> Use the /xcode-build-orchestrator skill to analyze build performance and come up with a plan for improvements.
 
 The agent will benchmark your clean and incremental builds, audit build settings, find compile hotspots, and produce an optimization plan at `.build-benchmark/optimization-plan.md`. No project files are modified until you explicitly approve changes.
 
