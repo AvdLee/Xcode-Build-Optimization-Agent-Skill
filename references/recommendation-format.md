@@ -7,6 +7,7 @@ All optimization skills should report recommendations in a shared structure so t
 Each recommendation should include:
 
 - `title`
+- `wait_time_impact` -- plain-language statement of expected wall-clock impact, e.g. "Expected to reduce your clean build by ~3s", "Reduces parallel compile work but unlikely to reduce build wait time", or "Impact on wait time is uncertain -- re-benchmark to confirm"
 - `category`
 - `observed_evidence`
 - `estimated_impact`
@@ -30,6 +31,7 @@ Each recommendation should include:
   "recommendations": [
     {
       "title": "Guard a release-only symbol upload script",
+      "wait_time_impact": "Expected to reduce your incremental build by approximately 6 seconds.",
       "category": "project",
       "observed_evidence": [
         "Incremental builds spend 6.3 seconds in a run script phase.",
@@ -51,11 +53,12 @@ Each recommendation should include:
 When rendering for human review, preserve the same field order:
 
 1. title
-2. observed evidence
-3. estimated impact
-4. confidence
-5. approval required
-6. benchmark verification status
+2. wait-time impact
+3. observed evidence
+4. estimated impact
+5. confidence
+6. approval required
+7. benchmark verification status
 
 That makes it easier for the developer to approve or reject specific items quickly.
 

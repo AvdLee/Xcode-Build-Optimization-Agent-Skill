@@ -21,6 +21,8 @@ This is a multi-skill Xcode build optimization repository.
 
 ## Rules
 
+- Wall-clock build time (how long the developer waits) is the primary success metric. Every recommendation must state its expected impact on wall-clock time. If the impact cannot be predicted, say so.
+- Cumulative task time from the Build Timing Summary is diagnostic evidence, not proof of wall-time impact. Xcode parallelizes aggressively, so reducing parallel task time may produce zero wait-time improvement.
 - Recommend-first by default. Never apply project, source, or package changes without explicit developer approval.
 - Benchmark before optimizing. Use `.build-benchmark/` artifacts as evidence.
 - Treat clean and incremental builds as separate metrics.

@@ -102,16 +102,25 @@ Before applying version pin changes:
 
 ## Reporting
 
-After applying changes, update the optimization plan with:
+Lead with the wall-clock result in plain language:
 
-- Post-change clean build median
-- Post-change incremental build median
-- Absolute and percentage deltas for both
+> "Your clean build now takes X.Xs (was Y.Ys) -- Z.Zs faster."
+> "Your incremental build now takes X.Xs (was Y.Ys) -- Z.Zs faster."
+
+Then include:
+
+- Post-change clean build wall-clock median
+- Post-change incremental build wall-clock median
+- Absolute and percentage wall-clock deltas for both
 - Confidence notes if benchmark noise is high
 - List of files modified per fix
 - Any deviations from the original recommendation
 
-If a fix produced no measurable improvement, note `No measurable improvement` and suggest whether to keep or revert.
+If cumulative task metrics improved but wall-clock did not, say plainly: "Compiler workload decreased but build wait time did not improve. This is expected when Xcode runs these tasks in parallel with other equally long work."
+
+If a fix produced no measurable wall-time improvement, note `No measurable wall-time improvement` and suggest whether to keep (e.g. for code quality) or revert.
+
+For changes valuable for non-benchmark reasons (deterministic package resolution, branch-switch caching), label them: "No wait-time improvement expected from this change. The benefit is [deterministic builds / faster branch switching / reduced CI cost]."
 
 Note: `COMPILATION_CACHING` improvements cannot be captured by the standard clean-build benchmark because `xcodebuild clean` invalidates the cache between runs. When reporting on this setting, note that the benefit is real but requires a different measurement approach (e.g., branch-switch benchmarks or repeat builds without cleaning). Recommend keeping the setting enabled based on documented benefit rather than requiring a delta from the benchmark.
 

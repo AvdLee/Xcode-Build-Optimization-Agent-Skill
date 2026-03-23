@@ -27,6 +27,8 @@ Use this structure when the orchestrator consolidates benchmark evidence and spe
 
 ### Clean Build Timing Summary
 
+> **Note:** These are aggregated task times across all CPU cores. Because Xcode runs many tasks in parallel, these totals typically exceed the actual build wait time shown above. A large number here does not mean it is blocking your build.
+
 | Category | Tasks | Seconds |
 |----------|------:|--------:|
 | SwiftCompile | 325 | 271.245s |
@@ -68,6 +70,7 @@ Use this structure when the orchestrator consolidates benchmark evidence and spe
 ## Prioritized Recommendations
 
 ### 1. Recommendation title
+**Wait-Time Impact:** Expected to reduce your clean build by approximately 3 seconds.
 **Category:** project
 **Evidence:** ...
 **Impact:** High
@@ -75,8 +78,8 @@ Use this structure when the orchestrator consolidates benchmark evidence and spe
 **Risk:** Low
 
 ## Approval Checklist
-- [ ] **1. Recommendation title** -- Impact: High | Risk: Low
-- [ ] **2. Another recommendation** -- Impact: Medium | Risk: Low
+- [ ] **1. Recommendation title** -- Wait-Time Impact: ~3s clean build reduction | Risk: Low
+- [ ] **2. Another recommendation** -- Wait-Time Impact: Uncertain, re-benchmark to confirm | Risk: Low
 
 ## Next Steps
 
@@ -84,14 +87,14 @@ After implementing approved changes, re-benchmark with the same inputs:
 
 ...
 
-Compare the new medians against the baseline to verify improvements.
+Compare the new wall-clock medians against the baseline. Report results as:
+"Your [clean/incremental] build now takes X.Xs (was Y.Ys) -- Z.Zs faster/slower."
 
 ## Verification (post-approval)
 
-- Post-change clean median:
-- Post-change zero-change median:
-- Clean delta:
-- Zero-change delta:
+- Post-change clean build: X.Xs (was Y.Ys) -- Z.Zs faster/slower
+- Post-change incremental build: X.Xs (was Y.Ys) -- Z.Zs faster/slower
+- If cumulative task metrics improved but wall-clock did not: "Compiler workload decreased but build wait time did not improve. This is expected when Xcode runs these tasks in parallel with other equally long work."
 
 ## Remaining follow-up ideas
 - Item:
