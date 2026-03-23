@@ -37,10 +37,11 @@ When benchmarking inside a git worktree, SPM packages with `exclude:` paths that
 1. Normalize the build command and note every flag that affects caching or module reuse.
 2. Run one warm-up build if needed to validate that the command succeeds.
 3. Run 3 clean builds.
-4. Run 3 zero-change builds (build immediately after a successful build with no edits). This measures the fixed overhead floor: dependency computation, project description transfer, build description creation, script phases, codesigning, and validation. A zero-change build that takes more than a few seconds indicates avoidable per-build overhead. Use the default `benchmark_builds.py` invocation (no `--touch-file` flag).
-5. Optionally run 3 incremental builds with a file touch to measure a real edit-rebuild loop. Use `--touch-file path/to/SomeFile.swift` to touch a representative source file before each build.
-6. Save the raw results and summary into `.build-benchmark/`.
-7. Report medians and spread, not just the single fastest run.
+4. If `COMPILATION_CACHING = YES` is detected, run 3 cached clean builds. These measure clean build time with a warm compilation cache -- the realistic scenario for branch switching, pulling changes, or Clean Build Folder. The script handles this automatically by building once to warm the cache, then deleting DerivedData (but not the compilation cache) before each measured run. Pass `--no-cached-clean` to skip.
+5. Run 3 zero-change builds (build immediately after a successful build with no edits). This measures the fixed overhead floor: dependency computation, project description transfer, build description creation, script phases, codesigning, and validation. A zero-change build that takes more than a few seconds indicates avoidable per-build overhead. Use the default `benchmark_builds.py` invocation (no `--touch-file` flag).
+6. Optionally run 3 incremental builds with a file touch to measure a real edit-rebuild loop. Use `--touch-file path/to/SomeFile.swift` to touch a representative source file before each build.
+7. Save the raw results and summary into `.build-benchmark/`.
+8. Report medians and spread, not just the single fastest run.
 
 ## Preferred Command Path
 
@@ -62,6 +63,7 @@ If you cannot use the helper script, run equivalent `xcodebuild` commands with `
 Return:
 
 - clean build median, min, max
+- cached clean build median, min, max (when COMPILATION_CACHING is enabled)
 - zero-change build median, min, max (fixed overhead floor)
 - incremental build median, min, max (if `--touch-file` was used)
 - biggest timing-summary categories

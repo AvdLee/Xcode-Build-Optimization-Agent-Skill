@@ -122,7 +122,7 @@ If a fix produced no measurable wall-time improvement, note `No measurable wall-
 
 For changes valuable for non-benchmark reasons (deterministic package resolution, branch-switch caching), label them: "No wait-time improvement expected from this change. The benefit is [deterministic builds / faster branch switching / reduced CI cost]."
 
-Note: `COMPILATION_CACHING` improvements cannot be captured by the standard clean-build benchmark because `xcodebuild clean` invalidates the cache between runs. When reporting on this setting, note that the benefit is real but requires a different measurement approach (e.g., branch-switch benchmarks or repeat builds without cleaning). Recommend keeping the setting enabled based on documented benefit rather than requiring a delta from the benchmark.
+Note: `COMPILATION_CACHING` improvements are captured by the **cached clean** benchmark phase, which the benchmark script runs automatically when it detects the setting. Cached clean builds measure clean build time with a warm compilation cache -- the realistic scenario for branch switching and pulling changes. Standard clean builds may show overhead from cache population; use the cached clean metric as the primary comparison for this setting.
 
 ## Escalation
 

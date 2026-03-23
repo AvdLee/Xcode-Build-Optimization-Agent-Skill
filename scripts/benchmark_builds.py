@@ -5,9 +5,11 @@ import json
 import os
 import platform
 import re
+import shutil
 import statistics
 import subprocess
 import sys
+import tempfile
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -30,6 +32,11 @@ def parse_args() -> argparse.Namespace:
         "--touch-file",
         help="Path to a source file to touch before each incremental build. "
         "When provided, measures a real edit-rebuild loop instead of a zero-change build.",
+    )
+    parser.add_argument(
+        "--no-cached-clean",
+        action="store_true",
+        help="Skip cached clean builds even when COMPILATION_CACHING is detected.",
     )
     parser.add_argument(
         "--extra-arg",
@@ -134,6 +141,19 @@ def xcode_version() -> str:
     return result.stdout.strip() if result.returncode == 0 else "unknown"
 
 
+def detect_compilation_caching(base_command: List[str]) -> bool:
+    """Check whether COMPILATION_CACHING is enabled in the resolved build settings."""
+    result = run_command([*base_command, "-showBuildSettings"])
+    if result.returncode != 0:
+        return False
+    for line in result.stdout.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("COMPILATION_CACHING") and "=" in stripped:
+            value = stripped.split("=", 1)[1].strip()
+            return value == "YES"
+    return False
+
+
 def measure_build(
     base_command: List[str],
     artifact_stem: str,
@@ -173,8 +193,6 @@ def main() -> int:
         if warmup.returncode != 0:
           sys.stderr.write(warmup.stdout + warmup.stderr)
           return warmup.returncode
-        # Warmup clean+build cycle primes OS-level caches (disk, dyld, etc.)
-        # so the first measured clean run is not penalised by cold caches.
         warmup_clean = run_command([*base_command, "clean"])
         if warmup_clean.returncode != 0:
             sys.stderr.write(warmup_clean.stdout + warmup_clean.stderr)
@@ -184,7 +202,7 @@ def main() -> int:
             sys.stderr.write(warmup_rebuild.stdout + warmup_rebuild.stderr)
             return warmup_rebuild.returncode
 
-    runs = {"clean": [], "incremental": []}
+    runs: Dict[str, list] = {"clean": [], "incremental": []}
 
     for index in range(1, args.repeats + 1):
         clean_result = run_command([*base_command, "clean"])
@@ -195,6 +213,38 @@ def main() -> int:
             return clean_result.returncode
         runs["clean"].append(measure_build(base_command, artifact_stem, output_dir, "clean", index))
 
+    # --- Cached clean builds ---------------------------------------------------
+    # When COMPILATION_CACHING is enabled, the compilation cache lives outside
+    # DerivedData and survives product deletion.  We measure "cached clean"
+    # builds by pointing DerivedData at a temp directory, warming the cache with
+    # one build, then deleting the DerivedData directory (but not the cache)
+    # before each measured rebuild.  This captures the realistic scenario:
+    # branch switching, pulling changes, or Clean Build Folder.
+    should_cached_clean = not args.no_cached_clean and detect_compilation_caching(base_command)
+    if should_cached_clean:
+        dd_path = Path(args.derived_data_path) if args.derived_data_path else Path(
+            tempfile.mkdtemp(prefix="xcode-bench-dd-")
+        )
+        cached_cmd = list(base_command)
+        if not args.derived_data_path:
+            cached_cmd.extend(["-derivedDataPath", str(dd_path)])
+
+        cache_warmup = run_command([*cached_cmd, "build"])
+        if cache_warmup.returncode != 0:
+            sys.stderr.write("Warning: cached clean warmup build failed, skipping cached clean benchmarks.\n")
+            sys.stderr.write(cache_warmup.stdout + cache_warmup.stderr)
+            should_cached_clean = False
+
+    if should_cached_clean:
+        runs["cached_clean"] = []
+        for index in range(1, args.repeats + 1):
+            shutil.rmtree(dd_path, ignore_errors=True)
+            runs["cached_clean"].append(
+                measure_build(cached_cmd, artifact_stem, output_dir, "cached-clean", index)
+            )
+        shutil.rmtree(dd_path, ignore_errors=True)
+
+    # --- Incremental / zero-change builds --------------------------------------
     incremental_label = "incremental"
     if args.touch_file:
         touch_path = Path(args.touch_file)
@@ -212,8 +262,15 @@ def main() -> int:
             measure_build(base_command, artifact_stem, output_dir, incremental_label, index)
         )
 
+    summary: Dict[str, object] = {
+        "clean": stats_for(runs["clean"]),
+        "incremental": stats_for(runs["incremental"]),
+    }
+    if "cached_clean" in runs:
+        summary["cached_clean"] = stats_for(runs["cached_clean"])
+
     artifact = {
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0" if "cached_clean" in runs else "1.1.0",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "build": {
             "entrypoint": "workspace" if args.workspace else "project",
@@ -231,10 +288,7 @@ def main() -> int:
             "cwd": os.getcwd(),
         },
         "runs": runs,
-        "summary": {
-            "clean": stats_for(runs["clean"]),
-            "incremental": stats_for(runs["incremental"]),
-        },
+        "summary": summary,
         "notes": [f"touch-file: {args.touch_file}"] if args.touch_file else [],
     }
 
@@ -243,6 +297,8 @@ def main() -> int:
 
     print(f"Saved benchmark artifact: {artifact_path}")
     print(f"Clean median: {artifact['summary']['clean']['median_seconds']}s")
+    if "cached_clean" in artifact["summary"]:
+        print(f"Cached clean median: {artifact['summary']['cached_clean']['median_seconds']}s")
     inc_label = "Incremental" if args.touch_file else "Zero-change"
     print(f"{inc_label} median: {artifact['summary']['incremental']['median_seconds']}s")
     return 0

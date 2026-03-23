@@ -12,7 +12,7 @@
   "properties": {
     "schema_version": {
       "type": "string",
-      "enum": ["1.0.0", "1.1.0"]
+      "enum": ["1.0.0", "1.1.0", "1.2.0"]
     },
     "created_at": {
       "type": "string",
@@ -84,6 +84,12 @@
             "$ref": "#/definitions/run"
           }
         },
+        "cached_clean": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/run"
+          }
+        },
         "incremental": {
           "type": "array",
           "items": {
@@ -101,6 +107,9 @@
       ],
       "properties": {
         "clean": {
+          "$ref": "#/definitions/stats"
+        },
+        "cached_clean": {
           "$ref": "#/definitions/stats"
         },
         "incremental": {
@@ -134,6 +143,7 @@
           "type": "string",
           "enum": [
             "clean",
+            "cached-clean",
             "incremental"
           ]
         },
