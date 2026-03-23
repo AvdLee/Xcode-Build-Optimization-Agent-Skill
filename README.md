@@ -220,7 +220,7 @@ The `xcode-build-orchestrator` generates your table row at the end of every opti
 
 | App | Clean Build | Incremental Build |
 |-----|------------|-------------------|
-| StockAnalyzer | 41.5s → 33.2s (-8.3s / 20% faster) | 5.3s → 3.6s (-1.7s / 32% faster) |
+| [Stock Analyzer](https://www.stock-analyzer.app) | 41.5s → 33.2s (-8.3s / 20% faster) | 5.3s → 3.6s (-1.7s / 32% faster) |
 
 ## Contributing
 
