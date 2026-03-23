@@ -8,6 +8,12 @@ All skills in this repository should treat `.build-benchmark/` as the canonical 
 - Make clean and incremental build data easy to compare.
 - Preserve enough context for later specialist analysis without rerunning the benchmark.
 
+## Wall-Clock vs Cumulative Task Time
+
+The `duration_seconds` field on each run and the `median_seconds` in the summary represent **wall-clock time** -- how long the developer actually waits. This is the primary success metric.
+
+The `timing_summary_categories` are **aggregated task times** parsed from Xcode's Build Timing Summary. Because Xcode runs many tasks in parallel across CPU cores, these totals typically exceed the wall-clock duration. A large cumulative `SwiftCompile` value is diagnostic evidence of compiler workload, not proof that compilation is blocking the build. Always compare category totals against the wall-clock median before concluding that a category is a bottleneck.
+
 ## File Layout
 
 Recommended outputs:

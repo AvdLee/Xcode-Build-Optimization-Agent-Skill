@@ -11,7 +11,8 @@ Use this skill when compile time, not just general project configuration, looks 
 
 - Start from evidence, ideally a recent `.build-benchmark/` artifact or raw timing-summary output.
 - Prefer analysis-only compiler flags over persistent project edits during investigation.
-- Rank findings by expected compile-time impact, not by how easy they are to describe.
+- Rank findings by expected **wall-clock** impact, not cumulative compile-time impact. When compile tasks are heavily parallelized (sum of compile categories >> wall-clock median), note that fixing individual hotspots may improve parallel efficiency without reducing build wait time.
+- When the evidence points to parallelized work rather than serial bottlenecks, label recommendations as "Reduces compiler workload (parallel)" rather than "Reduces build time."
 - Do not edit source or build settings without explicit developer approval.
 
 ## What To Inspect
@@ -68,7 +69,7 @@ For each recommendation, include:
 
 - observed evidence
 - likely affected file or module
-- estimated impact
+- expected wait-time impact (e.g. "Expected to reduce your clean build by ~2s" or "Reduces parallel compile work but unlikely to reduce build wait time")
 - confidence
 - whether approval is required before applying it
 
