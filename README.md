@@ -154,7 +154,6 @@ xcode-build-optimization-agent-skill/
     build-benchmark.schema.json
   scripts/
     benchmark_builds.py
-    check_spm_pins.py
     diagnose_compilation.py
     generate_optimization_report.py
     render_recommendations.py
