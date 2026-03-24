@@ -221,6 +221,9 @@ The `xcode-build-orchestrator` generates your table row at the end of every opti
 | App | Clean Build | Incremental Build |
 |-----|------------|-------------------|
 | [Stock Analyzer](https://www.stock-analyzer.app) | 41.5s → 33.2s (-8.3s / 20% faster) | 5.3s → 3.6s (-1.7s / 32% faster) |
+| [Enchanted](https://github.com/gluonfield/enchanted/pull/216) | 19.4s → 16.6s (-2.8s / 14% faster) | 2.5s → 2.2s (-0.3s / 12% faster) |
+| [Wikipedia iOS](https://github.com/wikimedia/wikipedia-ios/pull/5740) | 48.7s → 46.5s (-2.2s / 5% faster) | 12.9s → 12.2s (-0.7s / 5% faster) |
+| [Kickstarter iOS](https://github.com/kickstarter/ios-oss/pull/2808) | 83.4s → 83.5s (~0s / within noise) | 10.9s → 10.6s (-0.3s / 3% faster) |
 
 ## Contributing
 
