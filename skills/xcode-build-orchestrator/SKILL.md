@@ -151,6 +151,6 @@ python3 scripts/generate_optimization_report.py \
 ## Additional Resources
 
 - For the report template, see [references/orchestration-report-template.md](references/orchestration-report-template.md)
-- For benchmark artifact requirements, see [../../references/benchmark-artifacts.md](../../references/benchmark-artifacts.md)
-- For the recommendation format, see [../../references/recommendation-format.md](../../references/recommendation-format.md)
-- For build settings best practices, see [../../references/build-settings-best-practices.md](../../references/build-settings-best-practices.md)
+- For benchmark artifact requirements, see [references/benchmark-artifacts.md](references/benchmark-artifacts.md)
+- For the recommendation format, see [references/recommendation-format.md](references/recommendation-format.md)
+- For build settings best practices, see [references/build-settings-best-practices.md](references/build-settings-best-practices.md)

@@ -206,13 +206,13 @@ That distinction is central to this repo and follows both Apple's Xcode guidance
 
 ## Shared Support Layer
 
-The skills share:
+Each skill bundles its own copies of the scripts, references, and schemas it needs so it works after standalone installation. The canonical copies live at the repo root:
 
-- a common `.build-benchmark/` artifact contract
-- a shared JSON schema for benchmark output
-- helper scripts for benchmarking, timing-summary parsing, compilation diagnostics, report generation, and recommendation rendering
-- a build settings best practices reference for the pass/fail audit
-- a single source summary file so README and skill guidance stay aligned
+- `scripts/` -- helper scripts for benchmarking, timing-summary parsing, compilation diagnostics, report generation, and recommendation rendering
+- `references/` -- build settings best practices, artifact format, recommendation format, and source citations
+- `schemas/` -- JSON schema for benchmark output
+
+When a root-level file changes, the corresponding copies inside each skill that uses it must be updated (see [CONTRIBUTING.md](CONTRIBUTING.md)).
 
 ## Skill Structure
 <!-- BEGIN SKILL STRUCTURE -->
@@ -220,28 +220,55 @@ The skills share:
 skills/
   xcode-build-benchmark/
     SKILL.md
+    scripts/
+      benchmark_builds.py
     references/
       benchmarking-workflow.md
+      benchmark-artifacts.md
+    schemas/
+      build-benchmark.schema.json
   xcode-compilation-analyzer/
     SKILL.md
+    scripts/
+      diagnose_compilation.py
     references/
       code-compilation-checks.md
+      recommendation-format.md
+      build-optimization-sources.md
   xcode-project-analyzer/
     SKILL.md
     references/
       project-audit-checks.md
+      build-settings-best-practices.md
+      recommendation-format.md
+      build-optimization-sources.md
   spm-build-analysis/
     SKILL.md
+    scripts/
+      check_spm_pins.py
     references/
       spm-analysis-checks.md
+      recommendation-format.md
+      build-optimization-sources.md
   xcode-build-orchestrator/
     SKILL.md
+    scripts/
+      benchmark_builds.py
+      diagnose_compilation.py
+      generate_optimization_report.py
     references/
       orchestration-report-template.md
+      benchmark-artifacts.md
+      recommendation-format.md
+      build-settings-best-practices.md
   xcode-build-fixer/
     SKILL.md
+    scripts/
+      benchmark_builds.py
     references/
       fix-patterns.md
+      build-settings-best-practices.md
+      recommendation-format.md
 ```
 <!-- END SKILL STRUCTURE -->
 

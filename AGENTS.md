@@ -4,8 +4,8 @@ This is a multi-skill Xcode build optimization repository.
 
 ## Layout
 
-- `skills/` contains six installable Agent Skills, each with a `SKILL.md` entrypoint.
-- `references/`, `schemas/`, and `scripts/` at the repo root are shared support files used by the skills.
+- `skills/` contains six installable Agent Skills, each with a `SKILL.md` entrypoint. Each skill bundles its own scripts, references, and schemas so it works after standalone installation.
+- `references/`, `schemas/`, and `scripts/` at the repo root are canonical copies of the shared support files. Changes to these must be synced into the skill folders that use them (see CONTRIBUTING.md).
 - `.claude-plugin/` contains plugin and marketplace metadata.
 
 ## Skills
@@ -27,7 +27,7 @@ This is a multi-skill Xcode build optimization repository.
 - Benchmark before optimizing. Use `.build-benchmark/` artifacts as evidence.
 - Treat clean and incremental builds as separate metrics.
 - The orchestrator (`xcode-build-orchestrator`) is the primary entrypoint for end-to-end work.
-- Shared references and schemas live at the repo root, not inside individual skills.
+- Each skill bundles its own copies of scripts, references, and schemas for standalone installation. Root-level `scripts/`, `references/`, and `schemas/` are the canonical copies; keep both layers in sync.
 
 ## Handoff Between Skills
 

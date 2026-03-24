@@ -17,7 +17,7 @@ Use this skill for project- and target-level build inefficiencies that are unlik
 ## What To Review
 
 - scheme build order and target dependencies
-- debug vs release build settings against the [build settings best practices](../../references/build-settings-best-practices.md)
+- debug vs release build settings against the [build settings best practices](references/build-settings-best-practices.md)
 - run script phases and dependency-analysis settings
 - derived-data churn or obviously invalidating custom steps
 - opportunities for parallelization
@@ -31,7 +31,7 @@ Use this skill for project- and target-level build inefficiencies that are unlik
 
 ## Build Settings Best Practices Audit
 
-Every project audit should include a build settings checklist comparing the project's Debug and Release configurations against the recommended values in [build-settings-best-practices.md](../../references/build-settings-best-practices.md). Present results using checkmark/cross indicators (`[x]`/`[ ]`). The scope is strictly build performance -- do not flag language-migration settings like `SWIFT_STRICT_CONCURRENCY` or `SWIFT_UPCOMING_FEATURE_*`.
+Every project audit should include a build settings checklist comparing the project's Debug and Release configurations against the recommended values in [build-settings-best-practices.md](references/build-settings-best-practices.md). Present results using checkmark/cross indicators (`[x]`/`[ ]`). The scope is strictly build performance -- do not flag language-migration settings like `SWIFT_STRICT_CONCURRENCY` or `SWIFT_UPCOMING_FEATURE_*`.
 
 ## Apple-Derived Checks
 
@@ -71,6 +71,6 @@ If the evidence points to package graph or build plugins, hand off to [`spm-buil
 ## Additional Resources
 
 - For the detailed audit checklist, see [references/project-audit-checks.md](references/project-audit-checks.md)
-- For build settings best practices, see [../../references/build-settings-best-practices.md](../../references/build-settings-best-practices.md)
-- For the shared recommendation structure, see [../../references/recommendation-format.md](../../references/recommendation-format.md)
-- For Apple-aligned source summaries, see [../../references/build-optimization-sources.md](../../references/build-optimization-sources.md)
+- For build settings best practices, see [references/build-settings-best-practices.md](references/build-settings-best-practices.md)
+- For the shared recommendation structure, see [references/recommendation-format.md](references/recommendation-format.md)
+- For Apple-aligned source summaries, see [references/build-optimization-sources.md](references/build-optimization-sources.md)

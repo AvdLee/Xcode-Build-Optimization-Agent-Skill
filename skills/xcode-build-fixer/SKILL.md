@@ -28,7 +28,7 @@ When working from an optimization plan, read the approval checklist and implemen
 
 ### Build Settings
 
-Change `project.pbxproj` values to match the recommendations in [build-settings-best-practices.md](../../references/build-settings-best-practices.md).
+Change `project.pbxproj` values to match the recommendations in [build-settings-best-practices.md](references/build-settings-best-practices.md).
 
 Typical fixes:
 
@@ -214,5 +214,5 @@ If during implementation you discover issues outside this skill's scope:
 ## Additional Resources
 
 - For concrete before/after fix patterns, see [references/fix-patterns.md](references/fix-patterns.md)
-- For build settings best practices, see [../../references/build-settings-best-practices.md](../../references/build-settings-best-practices.md)
-- For the recommendation format, see [../../references/recommendation-format.md](../../references/recommendation-format.md)
+- For build settings best practices, see [references/build-settings-best-practices.md](references/build-settings-best-practices.md)
+- For the recommendation format, see [references/recommendation-format.md](references/recommendation-format.md)
