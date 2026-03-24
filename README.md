@@ -4,10 +4,10 @@ Open-source Agent Skills for benchmarking and optimizing Xcode build performance
 
 ## Quick Start
 
-Install the orchestrator skill:
+Install all six skills (the orchestrator needs the specialist skills to work):
 
 ```bash
-npx skills add https://github.com/avdlee/xcode-build-optimization-agent-skill --skill xcode-build-orchestrator
+npx skills add https://github.com/avdlee/xcode-build-optimization-agent-skill
 ```
 
 Then open your Xcode project in your AI coding tool and say:
@@ -102,19 +102,25 @@ The `xcode-build-orchestrator` generates your table row at the end of every opti
 | `spm-build-analysis` | Package graph, plugin overhead, and module variant review |
 | `xcode-build-fixer` | Apply approved optimization changes and verify with benchmarks |
 
-The orchestrator is the recommended starting point -- it coordinates the other five skills automatically.
+The orchestrator is the recommended starting point -- it coordinates the other five skills automatically. Install all six skills so the orchestrator can access each specialist.
 
 ## Installation Options
 
 ### Option A: Using skills.sh
 
-Install a single skill:
+Install all six skills (recommended -- the orchestrator depends on the specialist skills):
 
 ```bash
-npx skills add https://github.com/avdlee/xcode-build-optimization-agent-skill --skill xcode-build-orchestrator
+npx skills add https://github.com/avdlee/xcode-build-optimization-agent-skill
 ```
 
-Or install any of the six skills individually: `xcode-build-benchmark`, `xcode-compilation-analyzer`, `xcode-project-analyzer`, `spm-build-analysis`, `xcode-build-orchestrator`, `xcode-build-fixer`.
+To install a single skill for standalone use, add the `--skill` flag:
+
+```bash
+npx skills add https://github.com/avdlee/xcode-build-optimization-agent-skill --skill xcode-project-analyzer
+```
+
+Available individual skills: `xcode-build-benchmark`, `xcode-compilation-analyzer`, `xcode-project-analyzer`, `spm-build-analysis`, `xcode-build-orchestrator`, `xcode-build-fixer`. Note that the orchestrator requires all other skills to be installed.
 
 ### Option B: Claude Code Plugin
 
