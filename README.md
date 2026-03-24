@@ -108,7 +108,7 @@ The orchestrator is the recommended starting point -- it coordinates the other f
 
 ### Option A: Using skills.sh
 
-Install all six skills (recommended -- the orchestrator depends on the specialist skills):
+Install all six skills (required -- the orchestrator depends on the specialist skills):
 
 ```bash
 npx skills add https://github.com/avdlee/xcode-build-optimization-agent-skill
