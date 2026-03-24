@@ -32,3 +32,10 @@ This is a multi-skill Xcode build optimization repository.
 ## Handoff Between Skills
 
 When one skill identifies an issue outside its scope, read the target skill's `SKILL.md` under `skills/` and apply its workflow to the same project context. Pass along any benchmark artifacts or timing evidence already collected.
+
+## Documentation Sync
+
+- When a skill adds, removes, or changes an optimization check, update the matching row in the "What It Checks" table in `README.md` and the corresponding section in `OPTIMIZATION-CHECKS.md`.
+- When a new external reference (Apple doc, WWDC session, article) is used by a check, add it to the relevant section in `OPTIMIZATION-CHECKS.md` and to `references/build-optimization-sources.md`.
+- When a skill is added or removed, update the "Included Skills" table in `README.md`, the Skills table in this file, and the Skill Structure tree (between the `<!-- BEGIN SKILL STRUCTURE -->` / `<!-- END SKILL STRUCTURE -->` markers in `README.md`).
+- `OPTIMIZATION-CHECKS.md` is the single source of truth for what the agent checks and why. Skill-internal reference docs (under `skills/*/references/`) contain implementation detail; `OPTIMIZATION-CHECKS.md` is the developer-facing summary. Keep both layers consistent but do not duplicate implementation detail into `OPTIMIZATION-CHECKS.md`.
