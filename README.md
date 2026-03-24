@@ -1,3 +1,5 @@
+<a href="https://www.rocketsim.app"><img src="assets/xcode-build-optimization-banner.jpg" alt="Xcode Build Optimization Agent Skills - Monitor your build performance with RocketSim" /></a>
+
 # Xcode Build Optimization Agent Skills
 
 Open-source Agent Skills for benchmarking and optimizing Xcode build performance across clean builds, incremental builds, compile hotspots, project settings, and Swift Package Manager overhead.
