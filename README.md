@@ -217,55 +217,31 @@ The skills share:
 ## Skill Structure
 <!-- BEGIN SKILL STRUCTURE -->
 ```text
-xcode-build-optimization-agent-skill/
-  .claude-plugin/
-    marketplace.json
-    plugin.json
-  .cursor-plugin/
-    plugin.json
-  agents/
-    openai.yaml
-  assets/
-    logo.svg
-    xcode-build-optimization-banner.jpg
-  references/
-    benchmark-artifacts.md
-    build-optimization-sources.md
-    build-settings-best-practices.md
-    recommendation-format.md
-  schemas/
-    build-benchmark.schema.json
-  scripts/
-    benchmark_builds.py
-    diagnose_compilation.py
-    generate_optimization_report.py
-    render_recommendations.py
-    summarize_build_timing.py
-  skills/
-    xcode-build-benchmark/
-      SKILL.md
-      references/
-        benchmarking-workflow.md - Benchmark contract, clean vs incremental rules, and artifact expectations
-    xcode-compilation-analyzer/
-      SKILL.md
-      references/
-        code-compilation-checks.md - Swift compile hotspot checks and code-level heuristics
-    xcode-project-analyzer/
-      SKILL.md
-      references/
-        project-audit-checks.md - Build setting, script phase, and dependency audit checklist
-    spm-build-analysis/
-      SKILL.md
-      references/
-        spm-analysis-checks.md - Package graph, plugin overhead, and module variant review guide
-    xcode-build-orchestrator/
-      SKILL.md
-      references/
-        orchestration-report-template.md - Prioritization, approval, and verification report template
-    xcode-build-fixer/
-      SKILL.md
-      references/
-        fix-patterns.md - Concrete before/after patterns for each fix category
+skills/
+  xcode-build-benchmark/
+    SKILL.md
+    references/
+      benchmarking-workflow.md
+  xcode-compilation-analyzer/
+    SKILL.md
+    references/
+      code-compilation-checks.md
+  xcode-project-analyzer/
+    SKILL.md
+    references/
+      project-audit-checks.md
+  spm-build-analysis/
+    SKILL.md
+    references/
+      spm-analysis-checks.md
+  xcode-build-orchestrator/
+    SKILL.md
+    references/
+      orchestration-report-template.md
+  xcode-build-fixer/
+    SKILL.md
+    references/
+      fix-patterns.md
 ```
 <!-- END SKILL STRUCTURE -->
 
