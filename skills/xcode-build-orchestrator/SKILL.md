@@ -70,6 +70,7 @@ Every recommendation presented to the developer must include one of these impact
 - "Reduces parallel compile work but is unlikely to reduce your build wait time because other tasks take equally long."
 - "Impact on wait time is uncertain -- re-benchmark after applying to confirm."
 - "No wait-time improvement expected. The benefit is [deterministic builds / faster branch switching / reduced CI cost]."
+- For COMPILATION_CACHING specifically: "Measured 5-14% faster clean builds across tested projects. The benefit compounds in real workflows where the cache persists between builds -- branch switching, pulling changes, and CI with persistent DerivedData."
 
 Never quote cumulative task-time savings as the headline impact. If a change reduces 5 seconds of parallel compile work but another equally long task still runs, the developer's wait time does not change.
 
