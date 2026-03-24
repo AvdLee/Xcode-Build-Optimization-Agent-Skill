@@ -156,7 +156,23 @@ To enable for everyone in a repository, add to your project configuration:
 }
 ```
 
-### Option C: Manual Install
+### Option C: Cursor Plugin (coming soon)
+
+This repository is packaged for Cursor plugin submission, but the marketplace listing is not live yet.
+
+Once approved, you'll be able to install it from the Cursor Marketplace.
+
+### Option D: Codex / OpenAI-compatible tools
+
+This repository includes an `agents/openai.yaml` manifest. Copy or symlink the skill folders into your Codex skills directory:
+
+```bash
+cp -R skills/ "$CODEX_HOME/skills/"
+```
+
+See [Codex skills documentation](https://developers.openai.com/codex/skills/#where-to-save-skills) for details on where to save skills.
+
+### Option E: Manual Install
 
 1. Clone this repository.
 2. Install or symlink the specific skill folder from `skills/` that you want.
@@ -205,6 +221,13 @@ xcode-build-optimization-agent-skill/
   .claude-plugin/
     marketplace.json
     plugin.json
+  .cursor-plugin/
+    plugin.json
+  agents/
+    openai.yaml
+  assets/
+    logo.svg
+    xcode-build-optimization-banner.jpg
   references/
     benchmark-artifacts.md
     build-optimization-sources.md
