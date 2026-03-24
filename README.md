@@ -16,16 +16,73 @@ Then open your Xcode project in your AI coding tool and say:
 
 The agent will benchmark your clean and incremental builds, audit build settings, find compile hotspots, and produce an optimization plan at `.build-benchmark/optimization-plan.md`. No project files are modified until you explicitly approve changes.
 
-[See results of projects that used this skill →](#community-results)
-
 For long-term monitoring across days, machines, Xcode versions, and teams, use [RocketSim Build Insights](https://www.rocketsim.app/docs/features/build-insights/build-insights/) and [Team Build Insights](https://www.rocketsim.app/docs/features/build-insights/team-build-insights/).
 
-## See Also My Other Skills
+## Every Second Counts
 
-- [Swift Concurrency Expert](https://github.com/AvdLee/Swift-Concurrency-Agent-Skill)
-- [SwiftUI Expert](https://github.com/AvdLee/SwiftUI-Agent-Skill)
-- [Core Data Expert](https://github.com/AvdLee/Core-Data-Agent-Skill)
-- [Swift Testing Expert](https://github.com/AvdLee/Swift-Testing-Agent-Skill)
+A 1-second improvement on a 30-second incremental build sounds small. At 50 builds a day, that adds up to **3.5 hours per developer per year** -- or **35 hours across a team of ten**.
+
+Most projects have several seconds of easy wins hiding in build settings, script phases, and compiler flags. This skill finds them.
+
+## How It Works
+
+The orchestrator coordinates five specialist skills in a recommend-first workflow. Nothing is modified until you approve.
+
+```mermaid
+flowchart LR
+    Orchestrator --> Benchmark["Benchmark\n(clean + incremental)"]
+    Benchmark --> Compilation["Compilation\nAnalyzer"]
+    Benchmark --> Project["Project\nAnalyzer"]
+    Benchmark --> SPM["SPM\nAnalyzer"]
+    Compilation --> Plan["Optimization\nPlan"]
+    Project --> Plan
+    SPM --> Plan
+    Plan --> You{{"You review\n& approve"}}
+    You --> Fixer["Build\nFixer"]
+    Fixer --> ReBenchmark["Re-benchmark\n& verify"]
+```
+
+**Phase 1 -- Analyze.** The orchestrator benchmarks your project, runs the three specialist analyzers, and produces a prioritized optimization plan at `.build-benchmark/optimization-plan.md`. No project files are modified.
+
+> Use the Xcode build orchestrator to analyze build performance and come up with a plan for improvements.
+
+**Phase 2 -- Fix.** Review the plan, check the approval boxes for the items you want, and ask the agent to apply them. The fixer implements only approved changes and re-benchmarks to verify.
+
+> Implement the approved items from the optimization plan at .build-benchmark/optimization-plan.md, then re-benchmark to verify the improvements.
+
+The plan file is your evidence trail -- shareable with teammates, reviewable in PRs, and diffable over time.
+
+## What It Checks
+
+The agent runs [over 40 individual checks](OPTIMIZATION-CHECKS.md) across build settings, project configuration, source code, and package dependencies.
+
+| Check | What the agent looks for | |
+|-------|--------------------------|---|
+| Build settings audit | Debug/Release/General settings against best practices (compilation mode, optimization level, eager linking, compilation caching) | [Details](OPTIMIZATION-CHECKS.md#build-settings-audit) |
+| Script phase analysis | Missing input/output declarations, scripts running unnecessarily, debug/simulator guards | [Details](OPTIMIZATION-CHECKS.md#script-phase-analysis) |
+| Compile hotspot detection | Long type-checks, complex expressions, compiler diagnostic flags | [Details](OPTIMIZATION-CHECKS.md#compile-hotspot-detection) |
+| Zero-change build overhead | Fixed-cost phases (codesign, validation, scripts) inflating incremental builds | [Details](OPTIMIZATION-CHECKS.md#zero-change-build-overhead) |
+| Target dependency review | Accuracy, parallelism blockers, monolithic targets | [Details](OPTIMIZATION-CHECKS.md#target-dependency-review) |
+| Module variant detection | Config drift across targets causing duplicate module builds | [Details](OPTIMIZATION-CHECKS.md#module-variant-detection) |
+| SPM graph analysis | Plugin overhead, branch pins, package layering, circular dependencies | [Details](OPTIMIZATION-CHECKS.md#spm-graph-analysis) |
+| Swift macro impact | Cascading rebuilds, swift-syntax universal builds | [Details](OPTIMIZATION-CHECKS.md#swift-macro-impact) |
+| SwiftUI view decomposition | Monolithic body properties, result builder complexity | [Details](OPTIMIZATION-CHECKS.md#swiftui-view-decomposition) |
+| Asset catalog parallelism | Single-threaded compilation bottleneck, splitting for parallel builds | [Details](OPTIMIZATION-CHECKS.md#asset-catalog-parallelism) |
+| Access control optimization | Missing `final`, overly broad visibility inflating compiler work | [Details](OPTIMIZATION-CHECKS.md#access-control-optimization) |
+| Incremental build diagnostics | Planning Swift module, SwiftEmitModule, Task Backtraces | [Details](OPTIMIZATION-CHECKS.md#incremental-build-diagnostics) |
+
+## Community Results
+
+Real-world improvements reported by developers who used these skills. Add your own by opening a pull request.
+
+The `xcode-build-orchestrator` generates your table row at the end of every optimization run, so contributing is a single copy-paste.
+
+| App | Clean Build | Incremental Build |
+|-----|------------|-------------------|
+| [Stock Analyzer](https://www.stock-analyzer.app) | 41.5s → 33.2s (-8.3s / 20% faster) | 5.3s → 3.6s (-1.7s / 32% faster) |
+| [Enchanted](https://github.com/gluonfield/enchanted/pull/216) | 19.4s → 16.6s (-2.8s / 14% faster) | 2.5s → 2.2s (-0.3s / 12% faster) |
+| [Wikipedia iOS](https://github.com/wikimedia/wikipedia-ios/pull/5740) | 48.7s → 46.5s (-2.2s / 5% faster) | 12.9s → 12.2s (-0.7s / 5% faster) |
+| [Kickstarter iOS](https://github.com/kickstarter/ios-oss/pull/2808) | 83.4s → 83.5s (~0s / within noise) | 10.9s → 10.6s (-0.3s / 3% faster) |
 
 ## Who This Is For
 
@@ -99,20 +156,6 @@ To enable for everyone in a repository, add to your project configuration:
 
 Useful docs: [Codex Skills](https://developers.openai.com/codex/skills/#where-to-save-skills) | [Claude Code Agent Skills](https://code.claude.com/en/skills) | [Cursor Skills](https://cursor.com/docs/context/skills#enabling-skills)
 
-## How It Works
-
-The orchestrator uses a two-phase recommend-first workflow that separates analysis from implementation.
-
-**Phase 1 -- Analyze.** The agent benchmarks your project, runs all specialist analyses, and produces a markdown optimization plan at `.build-benchmark/optimization-plan.md`. The plan includes baseline benchmarks, a build settings audit, compilation diagnostics, and prioritized recommendations with an approval checklist. No project files are modified.
-
-> Use the Xcode build orchestrator to analyze build performance and come up with a plan for improvements.
-
-**Phase 2 -- Fix.** After reviewing the plan, check the approval boxes for the recommendations you want and ask the agent to implement them. It applies only the approved changes, re-benchmarks, and reports the measured improvement.
-
-> Implement the approved items from the optimization plan at .build-benchmark/optimization-plan.md, then re-benchmark to verify the improvements.
-
-The plan file becomes the evidence trail -- shareable with teammates, reviewable in pull requests, and diffable over time.
-
 ## Why Clean And Incremental Builds Both Matter
 
 Clean builds expose:
@@ -129,6 +172,13 @@ Incremental builds expose:
 - repeated package-plugin overhead
 
 That distinction is central to this repo and follows both Apple's Xcode guidance and the SwiftLee workflow in [Build performance analysis for speeding up Xcode builds](https://www.avanderlee.com/optimization/analysing-build-performance-xcode/).
+
+## See Also My Other Skills
+
+- [Swift Concurrency Expert](https://github.com/AvdLee/Swift-Concurrency-Agent-Skill)
+- [SwiftUI Expert](https://github.com/AvdLee/SwiftUI-Agent-Skill)
+- [Core Data Expert](https://github.com/AvdLee/Core-Data-Agent-Skill)
+- [Swift Testing Expert](https://github.com/AvdLee/Swift-Testing-Agent-Skill)
 
 ## Shared Support Layer
 
@@ -190,12 +240,7 @@ xcode-build-optimization-agent-skill/
 
 ## Research Basis
 
-This repo deliberately aligns with:
-
-- Apple's incremental-build guidance: accurate target dependencies, script input/output declarations, module maps, and parallel-friendly project structure
-- Apple's compile-efficiency guidance: explicit type information, simpler expressions, narrower bridging surfaces, and framework-qualified imports
-- Apple's explicit module dependency guidance: reducing duplicate module variants caused by configuration drift
-- the SwiftLee workflow for measuring with Build Timeline, Build Timing Summary, and Swift frontend diagnostics
+All checks are grounded in Apple documentation, WWDC sessions, and proven community practices. See [OPTIMIZATION-CHECKS.md](OPTIMIZATION-CHECKS.md) for the full list of checks with references to each source.
 
 The stored reference summaries live in `references/build-optimization-sources.md`.
 
@@ -211,19 +256,6 @@ RocketSim complements it by monitoring build performance over time:
 - team-wide visibility without custom build scripts
 
 If you want to catch regressions earlier and see whether your build times are improving over weeks or months, use [RocketSim Build Insights](https://www.rocketsim.app/docs/features/build-insights/build-insights/) after you apply the improvements from this repo.
-
-## Community Results
-
-Real-world improvements reported by developers who used these skills. Add your own by opening a pull request.
-
-The `xcode-build-orchestrator` generates your table row at the end of every optimization run, so contributing is a single copy-paste.
-
-| App | Clean Build | Incremental Build |
-|-----|------------|-------------------|
-| [Stock Analyzer](https://www.stock-analyzer.app) | 41.5s → 33.2s (-8.3s / 20% faster) | 5.3s → 3.6s (-1.7s / 32% faster) |
-| [Enchanted](https://github.com/gluonfield/enchanted/pull/216) | 19.4s → 16.6s (-2.8s / 14% faster) | 2.5s → 2.2s (-0.3s / 12% faster) |
-| [Wikipedia iOS](https://github.com/wikimedia/wikipedia-ios/pull/5740) | 48.7s → 46.5s (-2.2s / 5% faster) | 12.9s → 12.2s (-0.7s / 5% faster) |
-| [Kickstarter iOS](https://github.com/kickstarter/ios-oss/pull/2808) | 83.4s → 83.5s (~0s / within noise) | 10.9s → 10.6s (-0.3s / 3% faster) |
 
 ## Contributing
 
