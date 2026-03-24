@@ -156,7 +156,23 @@ To enable for everyone in a repository, add to your project configuration:
 }
 ```
 
-### Option C: Manual Install
+### Option C: Cursor Plugin (coming soon)
+
+This repository is packaged for Cursor plugin submission, but the marketplace listing is not live yet.
+
+Once approved, you'll be able to install it from the Cursor Marketplace.
+
+### Option D: Codex / OpenAI-compatible tools
+
+This repository includes an `agents/openai.yaml` manifest. Copy or symlink the skill folders into your Codex skills directory:
+
+```bash
+cp -R skills/ "$CODEX_HOME/skills/"
+```
+
+See [Codex skills documentation](https://developers.openai.com/codex/skills/#where-to-save-skills) for details on where to save skills.
+
+### Option E: Manual Install
 
 1. Clone this repository.
 2. Install or symlink the specific skill folder from `skills/` that you want.
@@ -201,48 +217,31 @@ The skills share:
 ## Skill Structure
 <!-- BEGIN SKILL STRUCTURE -->
 ```text
-xcode-build-optimization-agent-skill/
-  .claude-plugin/
-    marketplace.json
-    plugin.json
-  references/
-    benchmark-artifacts.md
-    build-optimization-sources.md
-    build-settings-best-practices.md
-    recommendation-format.md
-  schemas/
-    build-benchmark.schema.json
-  scripts/
-    benchmark_builds.py
-    diagnose_compilation.py
-    generate_optimization_report.py
-    render_recommendations.py
-    summarize_build_timing.py
-  skills/
-    xcode-build-benchmark/
-      SKILL.md
-      references/
-        benchmarking-workflow.md - Benchmark contract, clean vs incremental rules, and artifact expectations
-    xcode-compilation-analyzer/
-      SKILL.md
-      references/
-        code-compilation-checks.md - Swift compile hotspot checks and code-level heuristics
-    xcode-project-analyzer/
-      SKILL.md
-      references/
-        project-audit-checks.md - Build setting, script phase, and dependency audit checklist
-    spm-build-analysis/
-      SKILL.md
-      references/
-        spm-analysis-checks.md - Package graph, plugin overhead, and module variant review guide
-    xcode-build-orchestrator/
-      SKILL.md
-      references/
-        orchestration-report-template.md - Prioritization, approval, and verification report template
-    xcode-build-fixer/
-      SKILL.md
-      references/
-        fix-patterns.md - Concrete before/after patterns for each fix category
+skills/
+  xcode-build-benchmark/
+    SKILL.md
+    references/
+      benchmarking-workflow.md
+  xcode-compilation-analyzer/
+    SKILL.md
+    references/
+      code-compilation-checks.md
+  xcode-project-analyzer/
+    SKILL.md
+    references/
+      project-audit-checks.md
+  spm-build-analysis/
+    SKILL.md
+    references/
+      spm-analysis-checks.md
+  xcode-build-orchestrator/
+    SKILL.md
+    references/
+      orchestration-report-template.md
+  xcode-build-fixer/
+    SKILL.md
+    references/
+      fix-patterns.md
 ```
 <!-- END SKILL STRUCTURE -->
 
