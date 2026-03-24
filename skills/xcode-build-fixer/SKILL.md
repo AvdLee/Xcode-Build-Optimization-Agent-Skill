@@ -100,6 +100,46 @@ Before applying version pin changes:
    ```
 6. Compare post-change medians to the baseline and report deltas.
 
+## Evaluating Regressions
+
+Not every slower number is a true regression. The fixer must evaluate the full picture before recommending a revert.
+
+### Compilation caching trade-off
+
+A change like `COMPILATION_CACHING = YES` may make a standard clean build slightly slower (cache population overhead) while making cached clean builds significantly faster. Since cached clean builds reflect the realistic developer workflow (branch switching, pulling changes, Clean Build Folder with a warm cache), a slower standard clean build paired with a faster cached clean build is a net improvement, not a regression. The same logic applies to any change where the first-time cost is higher but subsequent builds benefit.
+
+### Compare all build types
+
+Evaluate standard clean, cached clean (when available), and incremental builds together. A change is only a clear regression if it makes the metrics that matter to the developer's daily workflow worse. If only the cold-start clean build is slower but the developer rarely does truly cold builds, that may be acceptable.
+
+### Per-change vs. cumulative
+
+A single change that regresses on its own may still be worth keeping if it enables a larger cumulative improvement (e.g., enabling compilation caching makes one build type slower but unlocks cache benefits for everything else).
+
+### Best-practice settings are not revert candidates
+
+Some build settings are Apple's recommended modern defaults. These should be applied and kept regardless of whether the immediate benchmark shows a measurable improvement. They are not speculative optimizations -- they align the project with Apple's toolchain direction and will compound in value over future Xcode releases. The fixer must never recommend reverting these settings based on a single benchmark result.
+
+Best-practice settings that should always be kept once applied:
+
+- `COMPILATION_CACHING = YES` -- Apple is actively investing in this; the cache improves with each Xcode release and compounds across real workflows
+- `EAGER_LINKING = YES` (Debug) -- allows the linker to overlap with compilation
+- `SWIFT_USE_INTEGRATED_DRIVER = YES` -- eliminates inter-process scheduling overhead
+- `DEBUG_INFORMATION_FORMAT = dwarf` (Debug) -- avoids unnecessary dSYM generation
+- `SWIFT_COMPILATION_MODE = singlefile` (Debug) -- incremental recompilation
+- `ONLY_ACTIVE_ARCH = YES` (Debug) -- no reason to build all architectures locally
+
+When reporting on these settings, use language like: "Applied recommended build setting. No immediate benchmark improvement measured, but this aligns with Apple's recommended configuration and positions the project for future Xcode improvements."
+
+### When to recommend revert (speculative changes only)
+
+For changes that are not best-practice settings (e.g., source refactors, linkage experiments, script phase modifications, dependency restructuring):
+
+- If the cumulative pass shows wall-clock regression across all measured build types (standard clean, cached clean, and incremental are all slower), recommend reverting all speculative changes unless the developer explicitly asks to keep specific items for non-performance reasons.
+- For each individual speculative change: if it shows no median improvement and no cached/incremental benefit either, flag it with `Recommend revert` and the measured delta.
+- Distinguish between "outlier reduction only" (improved worst-case but not median) and "median improvement" (improved typical developer wait).
+- When a change trades off one build type for another (e.g., slower standard clean but faster cached clean), present both numbers clearly and let the developer decide. Frame it as: "Standard clean builds are X.Xs slower, but cached clean builds (the realistic daily workflow) are Y.Ys faster."
+
 ## Reporting
 
 Lead with the wall-clock result in plain language:
@@ -123,6 +163,45 @@ If a fix produced no measurable wall-time improvement, note `No measurable wall-
 For changes valuable for non-benchmark reasons (deterministic package resolution, branch-switch caching), label them: "No wait-time improvement expected from this change. The benefit is [deterministic builds / faster branch switching / reduced CI cost]."
 
 Note: `COMPILATION_CACHING` has been measured at 5-14% faster clean builds across tested projects (87 to 1,991 Swift files). The benefit compounds in real developer workflows where the cache persists between builds -- branch switching, pulling changes, and CI with persistent DerivedData. The benchmark script auto-detects this setting and runs a cached clean phase for validation.
+
+## Execution Report
+
+After the optimization pass is complete, produce a structured execution report. This gives the developer a clear summary of what was attempted, what worked, and what the final state is.
+
+Structure:
+
+```markdown
+## Execution Report
+
+### Baseline
+- Clean build median: X.Xs
+- Cached clean build median: X.Xs (if applicable)
+- Incremental build median: X.Xs
+
+### Changes Applied
+
+| # | Change | Actionability | Measured Result | Status |
+|---|--------|---------------|-----------------|--------|
+| 1 | Description | repo-local | Clean: X.Xs→Y.Ys, Incr: X.Xs→Y.Ys | Kept / Reverted / Blocked |
+| 2 | ... | ... | ... | ... |
+
+### Final Cumulative Result
+- Clean build median: X.Xs (was Y.Ys) -- Z.Zs faster/slower
+- Cached clean build median: X.Xs (was Y.Ys) -- Z.Zs faster/slower
+- Incremental build median: X.Xs (was Y.Ys) -- Z.Zs faster/slower
+- **Net result:** Faster / Slower / Unchanged
+
+### Blocked or Non-Actionable Findings
+- Finding: reason it could not be addressed from the repo
+```
+
+Status values:
+
+- `Kept` -- Change improved or maintained build times and was kept.
+- `Kept (best practice)` -- Change is a recommended build setting; kept regardless of immediate benchmark result.
+- `Reverted` -- Change regressed build times and was reverted.
+- `Blocked` -- Change could not be applied due to project structure, Xcode behavior, or external constraints.
+- `No improvement` -- Change compiled but showed no measurable wall-time benefit. Include whether it was kept (for non-performance reasons) or reverted.
 
 ## Escalation
 

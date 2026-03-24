@@ -90,13 +90,32 @@ After implementing approved changes, re-benchmark with the same inputs:
 Compare the new wall-clock medians against the baseline. Report results as:
 "Your [clean/incremental] build now takes X.Xs (was Y.Ys) -- Z.Zs faster/slower."
 
-## Verification (post-approval)
+## Execution Report (post-approval)
 
+### Baseline
+- Clean build median: X.Xs
+- Cached clean build median: X.Xs (if applicable)
+- Incremental build median: X.Xs
+
+### Changes Applied
+
+| # | Change | Actionability | Measured Result | Status |
+|---|--------|---------------|-----------------|--------|
+| 1 | Description of change | repo-local | Clean: X.Xs→Y.Ys, Incr: X.Xs→Y.Ys | Kept / Reverted / Blocked |
+| 2 | ... | ... | ... | ... |
+
+Status values: `Kept`, `Kept (best practice)`, `Reverted`, `Blocked`, `No improvement`
+
+### Final Cumulative Result
 - Post-change clean build: X.Xs (was Y.Ys) -- Z.Zs faster/slower
 - Post-change cached clean build: X.Xs (was Y.Ys) -- Z.Zs faster/slower (when COMPILATION_CACHING enabled)
 - Post-change incremental build: X.Xs (was Y.Ys) -- Z.Zs faster/slower
+- **Net result:** Faster / Slower / Unchanged
 - If cumulative task metrics improved but wall-clock did not: "Compiler workload decreased but build wait time did not improve. This is expected when Xcode runs these tasks in parallel with other equally long work."
 - If standard clean builds are slower but cached clean builds are faster: "Standard clean builds show overhead from compilation cache population. Cached clean builds (the realistic developer workflow) are faster, confirming the net benefit."
+
+### Blocked or Non-Actionable Findings
+- Finding: reason it could not be addressed from the repo
 
 ## Remaining follow-up ideas
 - Item:

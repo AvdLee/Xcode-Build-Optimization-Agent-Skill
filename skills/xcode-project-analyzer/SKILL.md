@@ -26,6 +26,7 @@ Use this skill for project- and target-level build inefficiencies that are unlik
 - asset catalog compilation time, especially in targets with large or numerous catalogs
 - `ExtractAppIntentsMetadata` time in the Build Timing Summary -- if the project does not use App Intents but this phase consumes significant time, flag it as unnecessary overhead
 - zero-change build overhead -- if a no-op rebuild exceeds a few seconds, investigate fixed-cost phases (script execution, codesign, validation, CopySwiftLibs)
+- CocoaPods usage -- if a `Podfile` or `Pods.xcodeproj` exists, CocoaPods is deprecated; recommend migrating to SPM and do not attempt CocoaPods-specific optimizations (see [project-audit-checks.md](references/project-audit-checks.md))
 - Task Backtraces (Xcode 16.4+: Scheme Editor > Build > Build Debugging) to diagnose why tasks re-run unexpectedly in incremental builds
 
 ## Build Settings Best Practices Audit
