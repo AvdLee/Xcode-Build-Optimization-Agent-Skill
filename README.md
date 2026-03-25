@@ -220,54 +220,40 @@ When a root-level file changes, the corresponding copies inside each skill that 
 skills/
   xcode-build-benchmark/
     SKILL.md
-    scripts/
-      benchmark_builds.py
     references/
-      benchmarking-workflow.md
       benchmark-artifacts.md
-    schemas/
-      build-benchmark.schema.json
+      benchmarking-workflow.md
   xcode-compilation-analyzer/
     SKILL.md
-    scripts/
-      diagnose_compilation.py
     references/
+      build-optimization-sources.md
       code-compilation-checks.md
       recommendation-format.md
-      build-optimization-sources.md
   xcode-project-analyzer/
     SKILL.md
     references/
-      project-audit-checks.md
-      build-settings-best-practices.md
-      recommendation-format.md
       build-optimization-sources.md
+      build-settings-best-practices.md
+      project-audit-checks.md
+      recommendation-format.md
   spm-build-analysis/
     SKILL.md
-    scripts/
-      check_spm_pins.py
     references/
-      spm-analysis-checks.md
-      recommendation-format.md
       build-optimization-sources.md
+      recommendation-format.md
+      spm-analysis-checks.md
   xcode-build-orchestrator/
     SKILL.md
-    scripts/
-      benchmark_builds.py
-      diagnose_compilation.py
-      generate_optimization_report.py
     references/
-      orchestration-report-template.md
       benchmark-artifacts.md
-      recommendation-format.md
       build-settings-best-practices.md
+      orchestration-report-template.md
+      recommendation-format.md
   xcode-build-fixer/
     SKILL.md
-    scripts/
-      benchmark_builds.py
     references/
-      fix-patterns.md
       build-settings-best-practices.md
+      fix-patterns.md
       recommendation-format.md
 ```
 <!-- END SKILL STRUCTURE -->
