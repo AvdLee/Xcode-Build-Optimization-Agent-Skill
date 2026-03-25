@@ -6,8 +6,8 @@ Thanks for helping improve this repository. Contributions are welcome when they 
 
 This is a multi-skill repository that follows the Agent Skills open format:
 
-- Skills live under `skills/`, each with a `SKILL.md` entrypoint.
-- Shared reference material lives in `references/`, `schemas/`, and `scripts/` at the repo root.
+- Skills live under `skills/`, each with a `SKILL.md` entrypoint. Each skill bundles its own scripts, references, and schemas so it works after standalone installation.
+- Canonical copies of shared files live in `references/`, `schemas/`, and `scripts/` at the repo root. When a root-level file changes, update the copies inside every skill that bundles it (see "Keeping shared files in sync" below).
 - The skills are intentionally recommend-first. They should not make project or source changes without explicit developer approval.
 
 ## Recommended Workflow
@@ -56,6 +56,22 @@ Avoid broad iOS architecture guidance, CI platform evangelism, or product docume
 - Use standard library tooling when possible.
 - Avoid network calls in scripts and GitHub Actions unless they are clearly required.
 - If you add or rename reference files, update the README structure block or let the sync workflow do it.
+
+### Keeping shared files in sync
+
+Each skill bundles copies of the scripts and references it needs. The root-level `scripts/`, `references/`, and `schemas/` directories hold the canonical versions. When you change a root-level file, copy the updated version into every skill folder that includes it:
+
+| Root file | Bundled in skills |
+|-----------|-------------------|
+| `scripts/benchmark_builds.py` | xcode-build-benchmark, xcode-build-orchestrator, xcode-build-fixer |
+| `scripts/diagnose_compilation.py` | xcode-compilation-analyzer, xcode-build-orchestrator |
+| `scripts/generate_optimization_report.py` | xcode-build-orchestrator |
+| `scripts/check_spm_pins.py` | spm-build-analysis |
+| `references/benchmark-artifacts.md` | xcode-build-benchmark, xcode-build-orchestrator |
+| `references/build-settings-best-practices.md` | xcode-project-analyzer, xcode-build-orchestrator, xcode-build-fixer |
+| `references/recommendation-format.md` | xcode-compilation-analyzer, xcode-project-analyzer, spm-build-analysis, xcode-build-orchestrator, xcode-build-fixer |
+| `references/build-optimization-sources.md` | xcode-compilation-analyzer, xcode-project-analyzer, spm-build-analysis |
+| `schemas/build-benchmark.schema.json` | xcode-build-benchmark |
 
 ## Typical Contribution Types
 

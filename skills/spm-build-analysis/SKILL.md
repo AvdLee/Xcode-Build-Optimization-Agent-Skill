@@ -88,5 +88,5 @@ If the main problem is not package-related, hand off to [`xcode-project-analyzer
 ## Additional Resources
 
 - For the detailed audit checklist, see [references/spm-analysis-checks.md](references/spm-analysis-checks.md)
-- For the shared recommendation structure, see [../../references/recommendation-format.md](../../references/recommendation-format.md)
-- For source citations, see [../../references/build-optimization-sources.md](../../references/build-optimization-sources.md)
+- For the shared recommendation structure, see [references/recommendation-format.md](references/recommendation-format.md)
+- For source citations, see [references/build-optimization-sources.md](references/build-optimization-sources.md)
