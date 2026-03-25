@@ -79,7 +79,8 @@ Real-world improvements reported by developers who used these skills. Add your o
 
 The `xcode-build-orchestrator` generates your table row at the end of every optimization run, so contributing is a single copy-paste.
 
-A small clean-build increase is normal when enabling compilation caching -- the first cold build populates the cache. Cached clean builds (branch switching, pulling changes) and incremental builds are where the real gains show up.
+> [!NOTE]
+> A small clean-build increase is normal when enabling compilation caching -- the first cold build populates the cache. Cached clean builds (branch switching, pulling changes) and incremental builds are where the real gains show up.
 
 | App | Clean Build | Incremental Build |
 |-----|------------|-------------------|
