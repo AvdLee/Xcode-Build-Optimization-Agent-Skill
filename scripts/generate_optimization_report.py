@@ -395,6 +395,7 @@ def _section_recommendations(recommendations: Optional[Dict[str, Any]]) -> str:
         lines.append(f"### {i}. {title}\n")
         for field, label in [
             ("wait_time_impact", "Wait-Time Impact"),
+            ("actionability", "Actionability"),
             ("category", "Category"),
             ("observed_evidence", "Evidence"),
             ("estimated_impact", "Impact"),
@@ -427,8 +428,10 @@ def _section_approval(recommendations: Optional[Dict[str, Any]]) -> str:
         wait_impact = item.get("wait_time_impact", "")
         impact = item.get("estimated_impact", "")
         risk = item.get("risk_level", "")
+        actionability = item.get("actionability", "")
         impact_str = wait_impact if wait_impact else impact
-        lines.append(f"- [ ] **{i}. {title}** -- Impact: {impact_str} | Risk: {risk}")
+        actionability_str = f" | Actionability: {actionability}" if actionability else ""
+        lines.append(f"- [ ] **{i}. {title}** -- Impact: {impact_str}{actionability_str} | Risk: {risk}")
     return "\n".join(lines)
 
 
