@@ -49,7 +49,7 @@ A zero-change build above 5 seconds on Apple Silicon typically indicates script 
 
 ## Build Setting Checks
 
-Audit project-level and target-level settings against the [build settings best practices](../../../references/build-settings-best-practices.md). Present results as a checklist with `[x]`/`[ ]` indicators.
+Audit project-level and target-level settings against the [build settings best practices](build-settings-best-practices.md). Present results as a checklist with `[x]`/`[ ]` indicators.
 
 Key settings to verify:
 
