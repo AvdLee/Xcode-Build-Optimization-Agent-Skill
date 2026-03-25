@@ -24,8 +24,9 @@ Use this skill for project- and target-level build inefficiencies that are unlik
 - explicit module dependency settings and module-map readiness
 - "Planning Swift module" time in the Build Timing Summary -- if it dominates incremental builds, suspect unexpected input modification or macro-related invalidation
 - asset catalog compilation time, especially in targets with large or numerous catalogs
-- `ExtractAppIntentsMetadata` time in the Build Timing Summary -- if the project does not use App Intents but this phase consumes significant time, flag it as unnecessary overhead
+- `ExtractAppIntentsMetadata` time in the Build Timing Summary -- if this phase consumes significant time, record it as `xcode-behavior` (report the cost and impact, but do not suggest a repo-local optimization unless there is explicit Apple guidance)
 - zero-change build overhead -- if a no-op rebuild exceeds a few seconds, investigate fixed-cost phases (script execution, codesign, validation, CopySwiftLibs)
+- CocoaPods usage -- if a `Podfile` or `Pods.xcodeproj` exists, CocoaPods is deprecated; recommend migrating to SPM and do not attempt CocoaPods-specific optimizations (see [project-audit-checks.md](references/project-audit-checks.md))
 - Task Backtraces (Xcode 16.4+: Scheme Editor > Build > Build Debugging) to diagnose why tasks re-run unexpectedly in incremental builds
 
 ## Build Settings Best Practices Audit

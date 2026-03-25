@@ -45,6 +45,14 @@ The `xcode-project-analyzer` audits project-level and target-level build setting
 - [Xcode Release Notes: Compilation Caching](https://developer.apple.com/documentation/xcode-release-notes/) (feature ID 149700201)
 - [Bitrise: Xcode Compilation Cache FAQ](https://docs.bitrise.io/en/bitrise-build-cache/build-cache-for-xcode/xcode-compilation-cache-faq.html)
 
+### CocoaPods Projects
+
+CocoaPods is deprecated. When a project uses CocoaPods, do not attempt CocoaPods-specific build optimizations (linkage mode changes, `COCOAPODS_PARALLEL_CODE_SIGN`, Podfile tweaks). These are unreliable and frequently regress build times.
+
+Recommend migrating to Swift Package Manager as the highest-impact long-term improvement. SPM advantages for build time: compilation caching works out of the box, better build parallelism from the dependency graph, no `pod install` xcconfig regeneration overhead, and native Xcode integration with full support for modern features like explicit modules.
+
+Focus analysis on first-party targets and build settings the project controls directly. Do not audit `Pods.xcodeproj` or the Podfile.
+
 ## Script Phase Analysis
 
 The `xcode-project-analyzer` inspects every Run Script phase in the project for missing metadata and unnecessary execution.
@@ -96,7 +104,7 @@ Even with no source edits, incremental builds incur fixed overhead. The agent me
 | `CopySwiftLibs` | Copies Swift standard libraries | Runs even when nothing changed |
 | `RegisterWithLaunchServices` | Registers the built app | Fast but always present |
 | `ProcessInfoPlistFile` | Re-processes Info.plist files | Scales with target count |
-| `ExtractAppIntentsMetadata` | Extracts App Intents metadata | Unnecessary overhead if the project does not use App Intents |
+| `ExtractAppIntentsMetadata` | Extracts App Intents metadata from all targets including third-party dependencies | Driven by Xcode, not by per-target project settings; unnecessary overhead if the project does not use App Intents but not cleanly suppressible from the repo (classify as `xcode-behavior`) |
 
 A zero-change build above 5 seconds on Apple Silicon typically indicates script phase overhead or excessive codesigning.
 

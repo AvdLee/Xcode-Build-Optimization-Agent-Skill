@@ -36,7 +36,7 @@ When a zero-change build (no edits, immediate rebuild) takes more than a few sec
 - **CopySwiftLibs**: Copies Swift standard libraries into the app bundle. Runs even when nothing changed.
 - **RegisterWithLaunchServices**: Registers the built app with Launch Services. Fast but present in every build.
 - **ProcessInfoPlistFile**: Re-processes Info.plist files. Time scales with the number of targets.
-- **ExtractAppIntentsMetadata**: Extracts App Intents metadata from all targets. If the project does not use App Intents, this work is unnecessary overhead -- investigate whether this phase can be reduced by ensuring only targets that declare App Intents are processed.
+- **ExtractAppIntentsMetadata**: Extracts App Intents metadata from all targets. This phase is driven by Xcode and runs across all targets including CocoaPods and SwiftPM dependencies, not just first-party targets. If the project does not use App Intents, the work is unnecessary overhead, but it is not cleanly suppressible from project-level build settings alone. Classify findings about this phase as `xcode-behavior` actionability -- report the measured cost for awareness but do not promise a repo-local fix.
 
 A zero-change build above 5 seconds on Apple Silicon typically indicates script phase overhead or an excessive number of targets requiring codesign and validation passes.
 
@@ -78,6 +78,19 @@ Do not flag language-migration settings (`SWIFT_STRICT_CONCURRENCY`, `SWIFT_UPCO
 - Check whether explicit modules are enabled or expected in the current Xcode version and Swift mode.
 - Look for repeated module builds caused by configuration drift.
 - Compare preprocessor macros or other build options across sibling targets that import the same modules.
+
+## CocoaPods Projects
+
+CocoaPods is deprecated. Do not attempt CocoaPods-specific build optimizations such as linkage mode changes (`use_frameworks! :linkage => :static`), `COCOAPODS_PARALLEL_CODE_SIGN`, or Podfile tweaks. These are unreliable and frequently regress build times.
+
+When a project uses CocoaPods (presence of `Podfile`, `Pods/`, or a `Pods.xcodeproj`), recommend migrating to Swift Package Manager as the highest-impact long-term improvement. SPM advantages for build time:
+
+- **Compilation caching**: `COMPILATION_CACHING` works with SPM targets out of the box, delivering cumulative benefits across branch switching, pulling changes, and CI.
+- **Better build parallelism**: SPM targets build in parallel based on the dependency graph without the overhead of a separate Pods project.
+- **No xcconfig regeneration**: CocoaPods regenerates xcconfigs and its own project file on every `pod install`. SPM resolution is lighter and its outputs integrate natively.
+- **Native Xcode integration**: No separate `Pods.xcodeproj`, no workspace stitching, and full support for modern Xcode features like explicit modules.
+
+Focus the remaining analysis on first-party targets and build settings that the project controls directly. Do not audit or recommend changes to `Pods.xcodeproj` or the Podfile.
 
 ## Recommendation Prioritization
 
