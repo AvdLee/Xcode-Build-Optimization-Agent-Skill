@@ -79,8 +79,11 @@ Real-world improvements reported by developers who used these skills. Add your o
 
 The `xcode-build-orchestrator` generates your table row at the end of every optimization run, so contributing is a single copy-paste.
 
+A small clean-build increase is normal when enabling compilation caching -- the first cold build populates the cache. Cached clean builds (branch switching, pulling changes) and incremental builds are where the real gains show up.
+
 | App | Clean Build | Incremental Build |
 |-----|------------|-------------------|
+| [Helm for App Store Connect](https://helm-app.com) | 86s → 91s (+5s / within noise) | 70s → 9s (-61s / 87% faster) |
 | [Stock Analyzer](https://www.stock-analyzer.app) | 41.5s → 33.2s (-8.3s / 20% faster) | 5.3s → 3.6s (-1.7s / 32% faster) |
 | [Enchanted](https://github.com/gluonfield/enchanted/pull/216) | 19.4s → 16.6s (-2.8s / 14% faster) | 2.5s → 2.2s (-0.3s / 12% faster) |
 | [Wikipedia iOS](https://github.com/wikimedia/wikipedia-ios/pull/5740) | 48.7s → 46.5s (-2.2s / 5% faster) | 12.9s → 12.2s (-0.7s / 5% faster) |
