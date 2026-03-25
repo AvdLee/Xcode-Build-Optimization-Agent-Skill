@@ -15,43 +15,12 @@ const SKILL_DIRS = [
 const beginMarker = "<!-- BEGIN SKILL STRUCTURE -->";
 const endMarker = "<!-- END SKILL STRUCTURE -->";
 
-const describeReference = (fileName) => {
-  const descriptions = {
-    "benchmarking-workflow.md": "Benchmark contract, clean vs incremental rules, and artifact expectations",
-    "code-compilation-checks.md": "Swift compile hotspot checks and code-level heuristics",
-    "project-audit-checks.md": "Build setting, script phase, and dependency audit checklist",
-    "spm-analysis-checks.md": "Package graph, plugin overhead, and module variant review guide",
-    "orchestration-report-template.md": "Prioritization, approval, and verification report template",
-    "fix-patterns.md": "Concrete before/after patterns for each fix category",
-  };
-  return descriptions[fileName] || "Reference file";
-};
-
 const buildTree = () => {
-  const lines = [
-    "xcode-build-optimization-agent-skill/",
-    "  .claude-plugin/",
-    "    marketplace.json",
-    "    plugin.json",
-    "  references/",
-    "    benchmark-artifacts.md",
-    "    build-optimization-sources.md",
-    "    build-settings-best-practices.md",
-    "    recommendation-format.md",
-    "  schemas/",
-    "    build-benchmark.schema.json",
-    "  scripts/",
-    "    benchmark_builds.py",
-    "    diagnose_compilation.py",
-    "    generate_optimization_report.py",
-    "    render_recommendations.py",
-    "    summarize_build_timing.py",
-    "  skills/",
-  ];
+  const lines = ["skills/"];
 
   for (const skillDir of SKILL_DIRS) {
-    lines.push(`    ${skillDir}/`);
-    lines.push("      SKILL.md");
+    lines.push(`  ${skillDir}/`);
+    lines.push("    SKILL.md");
     const referencesDir = path.join(SKILLS_ROOT, skillDir, "references");
     if (!fs.existsSync(referencesDir)) {
       continue;
@@ -63,9 +32,9 @@ const buildTree = () => {
     if (references.length === 0) {
       continue;
     }
-    lines.push("      references/");
+    lines.push("    references/");
     for (const fileName of references) {
-      lines.push(`        ${fileName} - ${describeReference(fileName)}`);
+      lines.push(`      ${fileName}`);
     }
   }
 
