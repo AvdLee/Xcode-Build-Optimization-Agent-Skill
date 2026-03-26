@@ -145,7 +145,7 @@ Key takeaways:
 
 - "Planning Swift module" can dominate incremental builds (up to 30s per module), sometimes exceeding clean build time.
 - Replanning every module without scheduling compiles is a sign that build inputs are being modified unexpectedly (e.g., a misconfigured linter touching file timestamps).
-- Enable **Task Backtraces** (Xcode 16.4+: Scheme Editor > Build > Build Debugging) to see why each task re-ran in an incremental build.
+- Enable **Task Backtraces** (Xcode 26.4+: Scheme Editor > Build > Build Debugging) to see why each task re-ran in an incremental build.
 - Heavy Swift macro usage (e.g., TCA / swift-syntax) can cause trivial changes to cascade into near-full rebuilds.
 - `swift-syntax` builds universally (all architectures) when no prebuilt binary is available, adding significant overhead.
 - `SwiftEmitModule` can take 60s+ after a single-line change in large modules.
