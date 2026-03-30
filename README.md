@@ -177,7 +177,16 @@ cp -R skills/ "$CODEX_HOME/skills/"
 
 See [Codex skills documentation](https://developers.openai.com/codex/skills/#where-to-save-skills) for details on where to save skills.
 
-### Option E: Manual Install
+### Option E: Using pi package manager
+
+Install via [pi](https://github.com/mariozechner/pi-mono):
+```bash
+pi install https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill
+```
+
+The skills will be available automatically in pi sessions.
+
+### Option F: Manual Install
 
 1. Clone this repository.
 2. Install or symlink the specific skill folder from `skills/` that you want.

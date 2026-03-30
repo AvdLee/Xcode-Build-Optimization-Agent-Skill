@@ -1,0 +1,13 @@
+{
+  "keywords": ["pi-package"],
+  "pi": {
+    "skills": [
+      "./skills/xcode-build-benchmark",
+      "./skills/xcode-build-fixer",
+      "./skills/xcode-build-orchestrator",
+      "./skills/xcode-compilation-analyzer",
+      "./skills/xcode-project-analyzer",
+      "./skills/spm-build-analysis"
+    ]
+  }
+}
