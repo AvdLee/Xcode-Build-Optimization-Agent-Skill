@@ -34,7 +34,7 @@ The `xcode-project-analyzer` audits project-level and target-level build setting
 
 | Setting | Key | Recommended | Why |
 |---------|-----|-------------|-----|
-| Compilation Caching | `COMPILATION_CACHING` | `YES` | Caches Swift and C-family compilation results; biggest wins on branch switching and clean builds |
+| Compilation Caching | `COMPILATION_CACHE_ENABLE_CACHING` | `YES` | Caches Swift and C-family compilation results; biggest wins on branch switching and clean builds |
 | Integrated Swift Driver | `SWIFT_USE_INTEGRATED_DRIVER` | `YES` | Eliminates inter-process overhead for compilation scheduling |
 | Clang Modules | `CLANG_ENABLE_MODULES` | `YES` | Caches module maps on disk instead of reprocessing headers |
 | Explicit Modules | `SWIFT_ENABLE_EXPLICIT_MODULES` | Evaluate per-project | Improves parallelism but may regress due to scanning overhead; benchmark before and after |
