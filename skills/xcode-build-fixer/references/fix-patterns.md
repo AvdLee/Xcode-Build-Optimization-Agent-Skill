@@ -32,12 +32,12 @@ SWIFT_COMPILATION_MODE = singlefile;
 
 Before (setting absent or):
 ```
-COMPILATION_CACHING = NO;
+COMPILATION_CACHE_ENABLE_CACHING = NO;
 ```
 
 After:
 ```
-COMPILATION_CACHING = YES;
+COMPILATION_CACHE_ENABLE_CACHING = YES;
 ```
 
 ### Enable Eager Linking (Debug)

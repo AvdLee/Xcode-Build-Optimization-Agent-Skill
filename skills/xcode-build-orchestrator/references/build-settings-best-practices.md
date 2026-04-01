@@ -128,7 +128,7 @@ These settings optimize for production builds.
 
 ### Compilation Caching
 
-- **Key:** `COMPILATION_CACHING`
+- **Key:** `COMPILATION_CACHE_ENABLE_CACHING`
 - **Recommended:** `YES`
 - **Why:** Caches compilation results for Swift and C-family sources so repeated compilations of the same inputs are served from cache. The biggest wins come from branch switching and clean builds where source files are recompiled unchanged. This is an opt-in feature. The umbrella setting controls both `SWIFT_ENABLE_COMPILE_CACHE` and `CLANG_ENABLE_COMPILE_CACHE` under the hood; those can be toggled independently if needed.
 - **Measurement:** Measured 5-14% faster clean builds across tested projects (87 to 1,991 Swift files). The benefit compounds in real developer workflows where the cache persists between builds -- branch switching, pulling changes, and CI with persistent DerivedData -- though the exact savings depend on how many files change between builds.
@@ -206,7 +206,7 @@ When reporting results, use this structure:
 ...
 
 ### General (All Configurations)
-- [ ] `COMPILATION_CACHING`: `NO` (recommended: `YES`)
+- [ ] `COMPILATION_CACHE_ENABLE_CACHING`: `NO` (recommended: `YES`)
 ...
 
 ### Cross-Target Consistency

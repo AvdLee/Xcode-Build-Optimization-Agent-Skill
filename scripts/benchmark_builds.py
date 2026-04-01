@@ -36,7 +36,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--no-cached-clean",
         action="store_true",
-        help="Skip cached clean builds even when COMPILATION_CACHING is detected.",
+        help="Skip cached clean builds even when COMPILATION_CACHE_ENABLE_CACHING is detected.",
     )
     parser.add_argument(
         "--extra-arg",
@@ -142,13 +142,13 @@ def xcode_version() -> str:
 
 
 def detect_compilation_caching(base_command: List[str]) -> bool:
-    """Check whether COMPILATION_CACHING is enabled in the resolved build settings."""
+    """Check whether COMPILATION_CACHE_ENABLE_CACHING is enabled in the resolved build settings."""
     result = run_command([*base_command, "-showBuildSettings"])
     if result.returncode != 0:
         return False
     for line in result.stdout.splitlines():
         stripped = line.strip()
-        if stripped.startswith("COMPILATION_CACHING") and "=" in stripped:
+        if stripped.startswith("COMPILATION_CACHE_ENABLE_CACHING") and "=" in stripped:
             value = stripped.split("=", 1)[1].strip()
             return value == "YES"
     return False
@@ -214,7 +214,7 @@ def main() -> int:
         runs["clean"].append(measure_build(base_command, artifact_stem, output_dir, "clean", index))
 
     # --- Cached clean builds ---------------------------------------------------
-    # When COMPILATION_CACHING is enabled, the compilation cache lives outside
+    # When COMPILATION_CACHE_ENABLE_CACHING is enabled, the compilation cache lives outside
     # DerivedData and survives product deletion.  We measure "cached clean"
     # builds by pointing DerivedData at a temp directory, warming the cache with
     # one build, then deleting the DerivedData directory (but not the cache)

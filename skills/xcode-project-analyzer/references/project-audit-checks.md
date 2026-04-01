@@ -59,7 +59,7 @@ Key settings to verify:
 - `DEBUG_INFORMATION_FORMAT` -- `dwarf` for Debug, `dwarf-with-dsym` for Release
 - `GCC_OPTIMIZATION_LEVEL` -- `0` for Debug, `s` for Release
 - `ENABLE_TESTABILITY` -- `YES` for Debug, `NO` for Release
-- `COMPILATION_CACHING` -- recommended `YES` for all configurations; caches repeated compilations during branch switching and clean builds
+- `COMPILATION_CACHE_ENABLE_CACHING` -- recommended `YES` for all configurations; caches repeated compilations during branch switching and clean builds
 - `EAGER_LINKING` -- recommended `YES` for Debug; starts linking before all compilation finishes
 - `SWIFT_USE_INTEGRATED_DRIVER` -- recommended `YES`; uses the integrated driver for better scheduling
 - `CLANG_ENABLE_MODULES` -- recommended `YES`; caches module maps on disk for C/ObjC
@@ -85,7 +85,7 @@ CocoaPods is deprecated. Do not attempt CocoaPods-specific build optimizations s
 
 When a project uses CocoaPods (presence of `Podfile`, `Pods/`, or a `Pods.xcodeproj`), recommend migrating to Swift Package Manager as the highest-impact long-term improvement. SPM advantages for build time:
 
-- **Compilation caching**: `COMPILATION_CACHING` works with SPM targets out of the box, delivering cumulative benefits across branch switching, pulling changes, and CI.
+- **Compilation caching**: `COMPILATION_CACHE_ENABLE_CACHING` works with SPM targets out of the box, delivering cumulative benefits across branch switching, pulling changes, and CI.
 - **Better build parallelism**: SPM targets build in parallel based on the dependency graph without the overhead of a separate Pods project.
 - **No xcconfig regeneration**: CocoaPods regenerates xcconfigs and its own project file on every `pod install`. SPM resolution is lighter and its outputs integrate natively.
 - **Native Xcode integration**: No separate `Pods.xcodeproj`, no workspace stitching, and full support for modern Xcode features like explicit modules.

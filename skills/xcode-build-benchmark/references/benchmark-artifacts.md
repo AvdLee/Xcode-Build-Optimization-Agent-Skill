@@ -22,7 +22,7 @@ Recommended outputs:
 - `.build-benchmark/<timestamp>-<scheme>-clean-1.log`
 - `.build-benchmark/<timestamp>-<scheme>-clean-2.log`
 - `.build-benchmark/<timestamp>-<scheme>-clean-3.log`
-- `.build-benchmark/<timestamp>-<scheme>-cached-clean-1.log` (when COMPILATION_CACHING is enabled)
+- `.build-benchmark/<timestamp>-<scheme>-cached-clean-1.log` (when COMPILATION_CACHE_ENABLE_CACHING is enabled)
 - `.build-benchmark/<timestamp>-<scheme>-cached-clean-2.log`
 - `.build-benchmark/<timestamp>-<scheme>-cached-clean-3.log`
 - `.build-benchmark/<timestamp>-<scheme>-incremental-1.log`
@@ -50,7 +50,7 @@ Each JSON artifact should include:
 Do not merge different build type measurements into a single list. They answer different questions:
 
 - **Clean builds** show full build-system, package, and module setup cost with a cold compilation cache.
-- **Cached clean builds** show clean build cost when the compilation cache is warm. This is the realistic scenario for branch switching, pulling changes, or Clean Build Folder. Only present when `COMPILATION_CACHING = YES` is detected.
+- **Cached clean builds** show clean build cost when the compilation cache is warm. This is the realistic scenario for branch switching, pulling changes, or Clean Build Folder. Only present when `COMPILATION_CACHE_ENABLE_CACHING = YES` is detected.
 - **Incremental builds** show edit-loop productivity and script or cache invalidation problems.
 
 ## Raw Logs
@@ -64,17 +64,17 @@ Store raw `xcodebuild` output beside the JSON artifact whenever possible. That a
 
 ## Measurement Caveats
 
-### COMPILATION_CACHING
+### COMPILATION_CACHE_ENABLE_CACHING
 
-`COMPILATION_CACHING = YES` stores compiled artifacts in a system-managed cache outside DerivedData so that repeated compilations of identical inputs are served from cache. The standard clean-build benchmark (`xcodebuild clean` between runs) may add overhead from cache population without showing the corresponding cache-hit benefit.
+`COMPILATION_CACHE_ENABLE_CACHING = YES` stores compiled artifacts in a system-managed cache outside DerivedData so that repeated compilations of identical inputs are served from cache. The standard clean-build benchmark (`xcodebuild clean` between runs) may add overhead from cache population without showing the corresponding cache-hit benefit.
 
-The benchmark script automatically detects `COMPILATION_CACHING = YES` and runs a **cached clean** benchmark phase. This phase:
+The benchmark script automatically detects `COMPILATION_CACHE_ENABLE_CACHING = YES` and runs a **cached clean** benchmark phase. This phase:
 
 1. Builds once to warm the compilation cache.
 2. Deletes DerivedData (but not the compilation cache) before each measured run.
 3. Rebuilds, measuring the cache-hit clean build time.
 
-The cached clean metric captures the realistic developer experience: branch switching, pulling changes, and Clean Build Folder. Use the cached clean median as the primary comparison metric when evaluating `COMPILATION_CACHING` impact.
+The cached clean metric captures the realistic developer experience: branch switching, pulling changes, and Clean Build Folder. Use the cached clean median as the primary comparison metric when evaluating `COMPILATION_CACHE_ENABLE_CACHING` impact.
 
 To skip this phase, pass `--no-cached-clean`.
 

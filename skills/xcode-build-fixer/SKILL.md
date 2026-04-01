@@ -34,7 +34,7 @@ Typical fixes:
 
 - Set `DEBUG_INFORMATION_FORMAT = dwarf` for Debug
 - Set `SWIFT_COMPILATION_MODE = singlefile` for Debug
-- Enable `COMPILATION_CACHING = YES`
+- Enable `COMPILATION_CACHE_ENABLE_CACHING = YES`
 - Enable `EAGER_LINKING = YES` for Debug
 - Align cross-target settings to eliminate module variants
 
@@ -106,7 +106,7 @@ Not every slower number is a true regression. The fixer must evaluate the full p
 
 ### Compilation caching trade-off
 
-A change like `COMPILATION_CACHING = YES` may make a standard clean build slightly slower (cache population overhead) while making cached clean builds significantly faster. Since cached clean builds reflect the realistic developer workflow (branch switching, pulling changes, Clean Build Folder with a warm cache), a slower standard clean build paired with a faster cached clean build is a net improvement, not a regression. The same logic applies to any change where the first-time cost is higher but subsequent builds benefit.
+A change like `COMPILATION_CACHE_ENABLE_CACHING = YES` may make a standard clean build slightly slower (cache population overhead) while making cached clean builds significantly faster. Since cached clean builds reflect the realistic developer workflow (branch switching, pulling changes, Clean Build Folder with a warm cache), a slower standard clean build paired with a faster cached clean build is a net improvement, not a regression. The same logic applies to any change where the first-time cost is higher but subsequent builds benefit.
 
 ### Compare all build types
 
@@ -122,7 +122,7 @@ Some build settings are Apple's recommended modern defaults. These should be app
 
 Best-practice settings that should always be kept once applied:
 
-- `COMPILATION_CACHING = YES` -- Apple is actively investing in this; the cache improves with each Xcode release and compounds across real workflows
+- `COMPILATION_CACHE_ENABLE_CACHING = YES` -- Apple is actively investing in this; the cache improves with each Xcode release and compounds across real workflows
 - `EAGER_LINKING = YES` (Debug) -- allows the linker to overlap with compilation
 - `SWIFT_USE_INTEGRATED_DRIVER = YES` -- eliminates inter-process scheduling overhead
 - `DEBUG_INFORMATION_FORMAT = dwarf` (Debug) -- avoids unnecessary dSYM generation
@@ -162,7 +162,7 @@ If a fix produced no measurable wall-time improvement, note `No measurable wall-
 
 For changes valuable for non-benchmark reasons (deterministic package resolution, branch-switch caching), label them: "No wait-time improvement expected from this change. The benefit is [deterministic builds / faster branch switching / reduced CI cost]."
 
-Note: `COMPILATION_CACHING` has been measured at 5-14% faster clean builds across tested projects (87 to 1,991 Swift files). The benefit compounds in real developer workflows where the cache persists between builds -- branch switching, pulling changes, and CI with persistent DerivedData. The benchmark script auto-detects this setting and runs a cached clean phase for validation.
+Note: `COMPILATION_CACHE_ENABLE_CACHING` has been measured at 5-14% faster clean builds across tested projects (87 to 1,991 Swift files). The benefit compounds in real developer workflows where the cache persists between builds -- branch switching, pulling changes, and CI with persistent DerivedData. The benchmark script auto-detects this setting and runs a cached clean phase for validation.
 
 ## Execution Report
 

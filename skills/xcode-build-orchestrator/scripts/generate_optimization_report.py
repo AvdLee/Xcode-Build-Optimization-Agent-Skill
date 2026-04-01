@@ -89,7 +89,7 @@ def _parse_target_configs(pbxproj: str) -> Dict[str, Dict[str, Dict[str, str]]]:
 # ---------------------------------------------------------------------------
 
 _DEBUG_EXPECTATIONS: List[Tuple[str, str, str]] = [
-    ("SWIFT_COMPILATION_MODE", "incremental", "Incremental recompiles only changed files"),
+    ("SWIFT_COMPILATION_MODE", "singlefile", "Single-file mode recompiles only changed files (Xcode UI: Incremental)"),
     ("SWIFT_OPTIMIZATION_LEVEL", "-Onone", "Optimization passes add compile time without debug benefit"),
     ("GCC_OPTIMIZATION_LEVEL", "0", "C/ObjC optimization adds compile time without debug benefit"),
     ("ONLY_ACTIVE_ARCH", "YES", "Building all architectures multiplies compile and link time"),
@@ -99,7 +99,7 @@ _DEBUG_EXPECTATIONS: List[Tuple[str, str, str]] = [
 ]
 
 _GENERAL_EXPECTATIONS: List[Tuple[str, str, str]] = [
-    ("COMPILATION_CACHING", "YES", "Caches compilation results so repeat builds of unchanged inputs are served from cache. Measured 5-14% faster clean builds across tested projects; benefit compounds during branch switching and pulling changes"),
+    ("COMPILATION_CACHE_ENABLE_CACHING", "YES", "Caches compilation results so repeat builds of unchanged inputs are served from cache. Measured 5-14% faster clean builds across tested projects; benefit compounds during branch switching and pulling changes"),
 ]
 
 _RELEASE_EXPECTATIONS: List[Tuple[str, str, str]] = [
@@ -127,7 +127,7 @@ def _effective_value(
 
 def _check(actual: Optional[str], expected: str) -> bool:
     if actual is None:
-        if expected in ("incremental",):
+        if expected in ("singlefile",):
             return True
         return False
     if expected == "-O" and actual in ("-O", '"-O"', '"-Osize"', "-Osize"):
