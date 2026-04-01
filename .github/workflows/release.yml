@@ -73,8 +73,8 @@ jobs:
         run: |
           set -euo pipefail
           if git diff --quiet .claude-plugin/plugin.json .claude-plugin/marketplace.json; then
-            echo "No version change detected."
-            exit 1
+            echo "Version already set to $VERSION. Skipping commit."
+            exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
