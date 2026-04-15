@@ -90,6 +90,7 @@ The `xcode-build-orchestrator` generates your table row at the end of every opti
 | [Wikipedia iOS](https://github.com/wikimedia/wikipedia-ios/pull/5740) | 48.7s → 46.5s (-2.2s / 5% faster) | 12.9s → 12.2s (-0.7s / 5% faster) |
 | [Kickstarter iOS](https://github.com/kickstarter/ios-oss/pull/2808) | 83.4s → 83.5s (~0s / within noise) | 10.9s → 10.6s (-0.3s / 3% faster) |
 | [Dash](https://dashworkouts.app) | 67.8s → 66.9s (-0.9s / within noise) | 6.7s → 7.1s (+0.4s / within noise) |
+| [Klivvr](https://klivvr.com/) | 247ss → 167s (-80s / 32% faster) | 48s → 48s (same) |
 
 ## Who This Is For
 
