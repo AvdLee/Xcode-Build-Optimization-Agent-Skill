@@ -65,9 +65,28 @@ The `xcode-project-analyzer` inspects every Run Script phase in the project for 
 - Timestamp-touching tools: linters or formatters that modify file timestamps without changing content silently invalidate build inputs and force replanning of every Swift module.
 - Parallelization: scripts with correctly declared dependencies can run in parallel with compilation instead of blocking it.
 
+### Script Sandboxing & Phase Fusion
+
+The analyzer flags targets that have one or more Run Script build phases and could benefit from `ENABLE_USER_SCRIPT_SANDBOXING` and `FUSE_BUILD_SCRIPT_PHASES`. Both come from WWDC22 session 110364 *Demystify parallelization in Xcode builds* (Ben, Xcode Build System team).
+
+- `ENABLE_USER_SCRIPT_SANDBOXING` (recommend `YES` when the target has Run Script phases) makes Xcode block scripts from reading or writing files outside their declared inputs and outputs:
+
+  > To enable Sandboxed Shell Scripts for a target, set ENABLE_USER_SCRIPT_SANDBOXING to YES in the build settings editor or an xcconfig file.
+
+  Sandboxing on its own does not change wall-clock time. Its role is to surface undeclared dependencies that would otherwise silently break builds when phase fusion is enabled.
+
+- `FUSE_BUILD_SCRIPT_PHASES` (recommend `YES`, gated on sandboxing being on and every script phase declaring complete inputs and outputs) lets consecutive Run Script phases within a target run in parallel:
+
+  > If the scripts in a target are configured to run based on dependency analysis and specify their complete list of inputs and outputs, then the build setting FUSE_BUILD_SCRIPT_PHASES can be set to YES to indicate the build system should attempt to run them in parallel.
+
+  Wall-clock impact is target-dependent: a target with N parallelizable phases of average duration `t` saves up to `(N-1) * t` per clean build. Targets with only one Run Script phase see no direct improvement; targets with several phases per target -- the orchestrator's NSK reference exhibits 12 `PhaseScriptExecution` tasks on a clean build -- are the strongest beneficiaries.
+
+Implementation detail (full audit entries, scope caveat, and risk discussion) lives in `references/build-settings-best-practices.md` under "User Script Sandboxing" and "Script Phase Fusion".
+
 **References:**
 - [Improving the speed of incremental builds](https://developer.apple.com/documentation/xcode/improving-the-speed-of-incremental-builds) -- Apple Documentation (script input/output declarations, `.xcfilelist`)
 - [Swift Forums: Slow incremental builds because of "Planning Swift module"](https://forums.swift.org/t/slow-incremental-builds-because-of-planning-swift-module/84803) -- timestamp invalidation case study
+- [WWDC22 Session 110364: Demystify parallelization in Xcode builds](https://developer.apple.com/videos/play/wwdc2022/110364/) -- sandboxing and phase fusion guidance
 
 ## Compile Hotspot Detection
 

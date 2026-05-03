@@ -14,7 +14,7 @@ This is a multi-skill Xcode build optimization repository.
 |-------|---------|
 | `xcode-build-benchmark` | Repeatable clean and incremental build benchmarking |
 | `xcode-compilation-analyzer` | Swift compile hotspot analysis and source-level recommendations |
-| `xcode-project-analyzer` | Build settings, scheme, script phase, and target dependency auditing |
+| `xcode-project-analyzer` | Build settings, scheme, script phase (including sandboxing and phase fusion), and target dependency auditing |
 | `spm-build-analysis` | Package graph, plugin overhead, and module variant review |
 | `xcode-build-orchestrator` | Orchestrator: benchmark, analyze, prioritize, approve, delegate fixes, re-benchmark |
 | `xcode-build-fixer` | Apply approved optimization changes and verify with benchmarks |
