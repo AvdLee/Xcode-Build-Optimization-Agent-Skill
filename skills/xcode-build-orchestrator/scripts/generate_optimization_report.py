@@ -5,6 +5,8 @@
 import argparse
 import json
 import re
+import shutil
+import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -85,6 +87,73 @@ def _parse_target_configs(pbxproj: str) -> Dict[str, Dict[str, Dict[str, str]]]:
 
 
 # ---------------------------------------------------------------------------
+# Effective build settings via xcodebuild
+# ---------------------------------------------------------------------------
+
+
+def _resolved_build_settings(
+    project_path: Path,
+    scheme: Optional[str],
+    configurations: Tuple[str, ...] = ("Debug", "Release"),
+    timeout_seconds: int = 120,
+) -> Dict[str, Dict[str, str]]:
+    """Resolve effective build settings for the given configurations via xcodebuild.
+
+    Returns ``{configuration_name: {key: resolved_value}}``. Each entry comes from
+    ``xcodebuild -showBuildSettings -json``, which reports the value Xcode actually
+    uses at build time (project + target + xcconfig + platform default resolution).
+
+    A configuration is omitted from the result when xcodebuild is unavailable, the
+    invocation fails, the output is empty, or JSON parsing fails. Callers must
+    treat a missing key as "no resolved value reported" and fall back to the
+    pbxproj-only audit for that key.
+    """
+    if not shutil.which("xcodebuild"):
+        return {}
+
+    results: Dict[str, Dict[str, str]] = {}
+    for configuration in configurations:
+        cmd: List[str] = [
+            "xcodebuild",
+            "-project",
+            str(project_path),
+            "-configuration",
+            configuration,
+        ]
+        if scheme:
+            cmd.extend(["-scheme", scheme])
+        cmd.extend(["-showBuildSettings", "-json"])
+
+        try:
+            proc = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=timeout_seconds,
+                check=False,
+            )
+        except (FileNotFoundError, OSError, subprocess.TimeoutExpired):
+            return results
+
+        if proc.returncode != 0 or not proc.stdout.strip():
+            continue
+
+        try:
+            entries = json.loads(proc.stdout)
+        except json.JSONDecodeError:
+            continue
+
+        merged: Dict[str, str] = {}
+        for entry in entries:
+            for key, value in entry.get("buildSettings", {}).items():
+                if key not in merged:
+                    merged[key] = value
+        if merged:
+            results[configuration] = merged
+    return results
+
+
+# ---------------------------------------------------------------------------
 # Best-practices audit
 # ---------------------------------------------------------------------------
 
@@ -149,14 +218,27 @@ def _audit_config(
     project_settings: Dict[str, str],
     expectations: List[Tuple[str, str, str]],
     config_name: str,
+    resolved_settings: Optional[Dict[str, str]] = None,
 ) -> List[str]:
     lines: List[str] = []
     for key, expected, _reason in expectations:
         actual = project_settings.get(key)
-        display_actual = actual if actual else "(unset)"
         passed = _check(actual, expected)
+
+        if actual is not None:
+            display = f"`{actual}`"
+        elif resolved_settings is not None and key in resolved_settings:
+            resolved = resolved_settings[key]
+            if _check(resolved, expected):
+                display = f"unset; resolved to `{resolved}` by Xcode default"
+                passed = True
+            else:
+                display = f"unset; resolved to `{resolved}`"
+        else:
+            display = "`(unset)`"
+
         mark = "[x]" if passed else "[ ]"
-        lines.append(f"- {mark} `{key}`: `{display_actual}` (recommended: `{expected}`)")
+        lines.append(f"- {mark} `{key}`: {display} (recommended: `{expected}`)")
     return lines
 
 
@@ -191,52 +273,103 @@ def _audit_consistency(
 # ---------------------------------------------------------------------------
 
 
+def _is_resolved_correctly(
+    actual: Optional[str],
+    resolved_settings: Optional[Dict[str, str]],
+    key: str,
+    expected: str,
+) -> bool:
+    """Return True when pbxproj is unset for ``key`` but xcodebuild resolves it
+    to a value matching ``expected``. Suppresses the false-positive recommendation
+    class reported in issue #19 without changing behavior for explicitly-set values
+    or for keys xcodebuild does not surface."""
+    if actual is not None:
+        return False
+    if resolved_settings is None or key not in resolved_settings:
+        return False
+    return _check(resolved_settings[key], expected)
+
+
+def _evidence_value(
+    actual: Optional[str],
+    resolved_settings: Optional[Dict[str, str]],
+    key: str,
+) -> str:
+    """Format the current-value evidence string for a recommendation, surfacing
+    the xcodebuild-resolved value when the project file is unset."""
+    if actual is not None:
+        return f"`{actual}`"
+    if resolved_settings is not None and key in resolved_settings:
+        return f"unset; resolved to `{resolved_settings[key]}`"
+    return "`(unset)`"
+
+
 def _auto_recommendations_from_audit(
     project_configs: Dict[str, Dict[str, str]],
+    resolved_configs: Optional[Dict[str, Dict[str, str]]] = None,
 ) -> Dict[str, Any]:
     """Generate basic recommendations from failing build settings audit checks."""
     items: List[Dict[str, str]] = []
+    debug_resolved = (resolved_configs or {}).get("Debug")
+    release_resolved = (resolved_configs or {}).get("Release")
 
     debug_settings = project_configs.get("Debug", {})
     for key, expected, reason in _DEBUG_EXPECTATIONS:
-        if not _check(debug_settings.get(key), expected):
-            actual = debug_settings.get(key, "(unset)")
-            items.append({
-                "title": f"Set `{key}` to `{expected}` for Debug",
-                "category": "build-settings",
-                "observed_evidence": f"Current value: `{actual}`. {reason}.",
-                "estimated_impact": "Medium",
-                "confidence": "High",
-                "risk_level": "Low",
-            })
+        actual = debug_settings.get(key)
+        if _check(actual, expected):
+            continue
+        if _is_resolved_correctly(actual, debug_resolved, key, expected):
+            continue
+        evidence_value = _evidence_value(actual, debug_resolved, key)
+        items.append({
+            "title": f"Set `{key}` to `{expected}` for Debug",
+            "category": "build-settings",
+            "observed_evidence": f"Current value: {evidence_value}. {reason}.",
+            "estimated_impact": "Medium",
+            "confidence": "High",
+            "risk_level": "Low",
+        })
 
-    merged = {}
+    merged: Dict[str, str] = {}
     for config in project_configs.values():
         merged.update(config)
+    resolved_merged: Optional[Dict[str, str]] = None
+    if resolved_configs:
+        resolved_merged = {}
+        for config in resolved_configs.values():
+            resolved_merged.update(config)
     for key, expected, reason in _GENERAL_EXPECTATIONS:
-        if not _check(merged.get(key), expected):
-            actual = merged.get(key, "(unset)")
-            items.append({
-                "title": f"Enable `{key} = {expected}`",
-                "category": "build-settings",
-                "observed_evidence": f"Current value: `{actual}`. {reason}.",
-                "estimated_impact": "High",
-                "confidence": "High",
-                "risk_level": "Low",
-            })
+        actual = merged.get(key)
+        if _check(actual, expected):
+            continue
+        if _is_resolved_correctly(actual, resolved_merged, key, expected):
+            continue
+        evidence_value = _evidence_value(actual, resolved_merged, key)
+        items.append({
+            "title": f"Enable `{key} = {expected}`",
+            "category": "build-settings",
+            "observed_evidence": f"Current value: {evidence_value}. {reason}.",
+            "estimated_impact": "High",
+            "confidence": "High",
+            "risk_level": "Low",
+        })
 
     release_settings = project_configs.get("Release", {})
     for key, expected, reason in _RELEASE_EXPECTATIONS:
-        if not _check(release_settings.get(key), expected):
-            actual = release_settings.get(key, "(unset)")
-            items.append({
-                "title": f"Set `{key}` to `{expected}` for Release",
-                "category": "build-settings",
-                "observed_evidence": f"Current value: `{actual}`. {reason}.",
-                "estimated_impact": "Medium",
-                "confidence": "High",
-                "risk_level": "Low",
-            })
+        actual = release_settings.get(key)
+        if _check(actual, expected):
+            continue
+        if _is_resolved_correctly(actual, release_resolved, key, expected):
+            continue
+        evidence_value = _evidence_value(actual, release_resolved, key)
+        items.append({
+            "title": f"Set `{key}` to `{expected}` for Release",
+            "category": "build-settings",
+            "observed_evidence": f"Current value: {evidence_value}. {reason}.",
+            "estimated_impact": "Medium",
+            "confidence": "High",
+            "risk_level": "Low",
+        })
 
     if not items:
         return {"recommendations": []}
@@ -335,18 +468,35 @@ def _section_baseline(benchmark: Dict[str, Any]) -> str:
 def _section_settings_audit(
     project_configs: Dict[str, Dict[str, str]],
     target_configs: Dict[str, Dict[str, Dict[str, str]]],
+    resolved_configs: Optional[Dict[str, Dict[str, str]]] = None,
 ) -> str:
     lines = ["## Build Settings Audit\n"]
 
+    if resolved_configs:
+        lines.append(
+            "> Settings shown as `unset; resolved to ...` are not declared in "
+            "`project.pbxproj` but are reported by `xcodebuild -showBuildSettings -json`. "
+            "Recommendations are not emitted when Xcode already resolves a value matching "
+            "the recommendation (issue #19).\n"
+        )
+
+    debug_resolved = (resolved_configs or {}).get("Debug")
+    release_resolved = (resolved_configs or {}).get("Release")
+    resolved_merged: Optional[Dict[str, str]] = None
+    if resolved_configs:
+        resolved_merged = {}
+        for config in resolved_configs.values():
+            resolved_merged.update(config)
+
     lines.append("### Debug Configuration\n")
-    lines.extend(_audit_config(project_configs.get("Debug", {}), _DEBUG_EXPECTATIONS, "Debug"))
+    lines.extend(_audit_config(project_configs.get("Debug", {}), _DEBUG_EXPECTATIONS, "Debug", debug_resolved))
 
     lines.append("\n### General (All Configurations)\n")
     merged = _merged_project_settings(project_configs)
-    lines.extend(_audit_config(merged, _GENERAL_EXPECTATIONS, "General"))
+    lines.extend(_audit_config(merged, _GENERAL_EXPECTATIONS, "General", resolved_merged))
 
     lines.append("\n### Release Configuration\n")
-    lines.extend(_audit_config(project_configs.get("Release", {}), _RELEASE_EXPECTATIONS, "Release"))
+    lines.extend(_audit_config(project_configs.get("Release", {}), _RELEASE_EXPECTATIONS, "Release", release_resolved))
 
     lines.append("\n### Cross-Target Consistency\n")
     lines.extend(_audit_consistency(project_configs, target_configs))
@@ -492,15 +642,20 @@ def main() -> int:
 
     project_configs: Dict[str, Dict[str, str]] = {}
     target_configs: Dict[str, Dict[str, Dict[str, str]]] = {}
+    resolved_configs: Dict[str, Dict[str, str]] = {}
     if args.project_path:
         pbxproj_path = Path(args.project_path) / "project.pbxproj"
         if pbxproj_path.exists():
             pbxproj = pbxproj_path.read_text()
             project_configs = _parse_project_level_configs(pbxproj)
             target_configs = _parse_target_configs(pbxproj)
+            resolved_configs = _resolved_build_settings(
+                Path(args.project_path),
+                benchmark.get("build", {}).get("scheme"),
+            )
 
     if recommendations is None and project_configs:
-        auto = _auto_recommendations_from_audit(project_configs)
+        auto = _auto_recommendations_from_audit(project_configs, resolved_configs or None)
         if auto["recommendations"]:
             recommendations = auto
 
@@ -511,7 +666,7 @@ def main() -> int:
     ]
 
     if project_configs:
-        sections.append(_section_settings_audit(project_configs, target_configs))
+        sections.append(_section_settings_audit(project_configs, target_configs, resolved_configs or None))
 
     sections.append(_section_diagnostics(diagnostics))
     sections.append(_section_recommendations(recommendations))
