@@ -27,6 +27,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--derived-data-path", help="DerivedData path override")
     parser.add_argument("--output-dir", default=".build-benchmark", help="Output directory for artifacts")
     parser.add_argument("--repeats", type=int, default=3, help="Measured runs per build type")
+    parser.add_argument(
+        "--variance-threshold",
+        type=float,
+        default=10.0,
+        help="Percent of median above which the (max - min) spread is flagged as high variance. "
+        "Default: 10. High-variance benchmarks are not reliable for distinguishing real changes "
+        "from measurement noise; the script auto-recommends rerunning with --repeats=5 when the "
+        "threshold is exceeded.",
+    )
     parser.add_argument("--skip-warmup", action="store_true", help="Skip the validation build")
     parser.add_argument(
         "--touch-file",
@@ -117,7 +126,7 @@ def run_command(command: List[str]) -> subprocess.CompletedProcess:
     return subprocess.run(command, capture_output=True, text=True)
 
 
-def stats_for(runs: List[Dict[str, object]]) -> Dict[str, float]:
+def stats_for(runs: List[Dict[str, object]], variance_threshold_percent: float) -> Dict[str, object]:
     durations = [run["duration_seconds"] for run in runs if run.get("success")]
     if not durations:
         return {
@@ -127,13 +136,23 @@ def stats_for(runs: List[Dict[str, object]]) -> Dict[str, float]:
             "median_seconds": 0.0,
             "average_seconds": 0.0,
         }
-    return {
+    min_seconds = round(min(durations), 3)
+    max_seconds = round(max(durations), 3)
+    median_seconds = round(statistics.median(durations), 3)
+    stats: Dict[str, object] = {
         "count": len(durations),
-        "min_seconds": round(min(durations), 3),
-        "max_seconds": round(max(durations), 3),
-        "median_seconds": round(statistics.median(durations), 3),
+        "min_seconds": min_seconds,
+        "max_seconds": max_seconds,
+        "median_seconds": median_seconds,
         "average_seconds": round(statistics.fmean(durations), 3),
     }
+    if len(durations) >= 2 and median_seconds > 0:
+        spread_seconds = round(max_seconds - min_seconds, 3)
+        spread_percent = round(spread_seconds / median_seconds * 100, 2)
+        stats["spread_seconds"] = spread_seconds
+        stats["spread_percent"] = spread_percent
+        stats["high_variance"] = spread_percent > variance_threshold_percent
+    return stats
 
 
 def xcode_version() -> str:
@@ -263,14 +282,34 @@ def main() -> int:
         )
 
     summary: Dict[str, object] = {
-        "clean": stats_for(runs["clean"]),
-        "incremental": stats_for(runs["incremental"]),
+        "clean": stats_for(runs["clean"], args.variance_threshold),
+        "incremental": stats_for(runs["incremental"], args.variance_threshold),
     }
     if "cached_clean" in runs:
-        summary["cached_clean"] = stats_for(runs["cached_clean"])
+        summary["cached_clean"] = stats_for(runs["cached_clean"], args.variance_threshold)
+
+    notes: List[str] = [f"touch-file: {args.touch_file}"] if args.touch_file else []
+
+    high_variance_types = sorted(
+        build_type
+        for build_type, stat in summary.items()
+        if stat.get("high_variance")
+    )
+    if high_variance_types and args.repeats < 5:
+        for build_type in high_variance_types:
+            stat = summary[build_type]
+            warning = (
+                f"Warning: high variance for {build_type}: spread "
+                f"{stat['spread_percent']}% of median exceeds threshold "
+                f"{args.variance_threshold}%. Re-run with --repeats=5 to "
+                f"tighten the confidence interval."
+            )
+            sys.stderr.write(warning + "\n")
+            notes.append(warning)
 
     artifact = {
-        "schema_version": "1.2.0" if "cached_clean" in runs else "1.1.0",
+        "schema_version": "1.3.0",
+        "variance_threshold_percent": args.variance_threshold,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "build": {
             "entrypoint": "workspace" if args.workspace else "project",
@@ -289,7 +328,7 @@ def main() -> int:
         },
         "runs": runs,
         "summary": summary,
-        "notes": [f"touch-file: {args.touch_file}"] if args.touch_file else [],
+        "notes": notes,
     }
 
     artifact_path = output_dir / f"{artifact_stem}.json"
