@@ -61,7 +61,7 @@ The agent runs [over 40 individual checks](OPTIMIZATION-CHECKS.md) across build 
 | Check | What the agent looks for | |
 |-------|--------------------------|---|
 | Build settings audit | Debug/Release/General settings against best practices (compilation mode, optimization level, eager linking, compilation caching) | [Details](OPTIMIZATION-CHECKS.md#build-settings-audit) |
-| Script phase analysis | Missing input/output declarations, scripts running unnecessarily, debug/simulator guards | [Details](OPTIMIZATION-CHECKS.md#script-phase-analysis) |
+| Script phase analysis | Missing input/output declarations, scripts running unnecessarily, debug/simulator guards, script sandboxing and phase fusion (WWDC22) | [Details](OPTIMIZATION-CHECKS.md#script-phase-analysis) |
 | Compile hotspot detection | Long type-checks, complex expressions, compiler diagnostic flags | [Details](OPTIMIZATION-CHECKS.md#compile-hotspot-detection) |
 | Zero-change build overhead | Fixed-cost phases (codesign, validation, scripts) inflating incremental builds | [Details](OPTIMIZATION-CHECKS.md#zero-change-build-overhead) |
 | Target dependency review | Accuracy, parallelism blockers, monolithic targets | [Details](OPTIMIZATION-CHECKS.md#target-dependency-review) |
@@ -106,7 +106,7 @@ The `xcode-build-orchestrator` generates your table row at the end of every opti
 | `xcode-build-orchestrator` | End-to-end workflow: benchmark, analyze, prioritize, approve, fix, re-benchmark |
 | `xcode-build-benchmark` | Repeatable clean and incremental build benchmarks with timestamped artifacts |
 | `xcode-compilation-analyzer` | Swift compile hotspot analysis and source-level recommendations |
-| `xcode-project-analyzer` | Build settings, scheme, script phase, and target dependency auditing |
+| `xcode-project-analyzer` | Build settings, scheme, script phase (including sandboxing and phase fusion), and target dependency auditing |
 | `spm-build-analysis` | Package graph, plugin overhead, and module variant review |
 | `xcode-build-fixer` | Apply approved optimization changes and verify with benchmarks |
 

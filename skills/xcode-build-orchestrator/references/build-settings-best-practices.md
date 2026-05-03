@@ -155,6 +155,40 @@ These settings optimize for production builds.
 - **Why:** Makes module compilation visible to the build system as discrete tasks, improving parallelism and scheduling. Reduces redundant module rebuilds by making dependency edges explicit. Some projects see regressions due to the overhead of dependency scanning, so benchmark before and after enabling.
 - **Risk:** Medium -- test thoroughly; currently experimental for Swift targets.
 
+### User Script Sandboxing
+
+- **Key:** `ENABLE_USER_SCRIPT_SANDBOXING`
+- **Recommended:** `YES` for any target that has Run Script build phases.
+- **Why:** Sandboxing forces every Run Script phase to declare each file it reads or writes inside the project source root and the derived data directory. Undeclared accesses fail loudly at build time instead of silently corrupting incremental builds, and -- critically -- the resulting clean dependency graph is the prerequisite for safely enabling `FUSE_BUILD_SCRIPT_PHASES`. From WWDC22 session 110364 *Demystify parallelization in Xcode builds* (Ben, Xcode Build System team):
+
+  > To mitigate this, Xcode supports user script sandboxing to precisely declare the dependencies of each script phase. Sandboxing is an opt-in feature that blocks shell scripts from accidentally accessing source files and intermediate build objects, unless those are explicitly declared as an input or output for the phase.
+
+  Activation:
+
+  > To enable Sandboxed Shell Scripts for a target, set ENABLE_USER_SCRIPT_SANDBOXING to YES in the build settings editor or an xcconfig file.
+
+  Scope caveat (must be reported alongside the recommendation):
+
+  > Enabling the build setting for a script's target blocks access to files inside the source root of the project as well as the derived data directory if they are not explicitly defined as inputs or outputs of the script in the project. The sandbox will not prevent unauthorized access to any other directory, so don't consider this a security feature.
+- **Measurement:** Indirect. Sandboxing on its own does not change wall-clock build time; its role is to surface the missing input and output declarations that block `FUSE_BUILD_SCRIPT_PHASES` from being safely enabled. The wall-clock benefit is captured under `FUSE_BUILD_SCRIPT_PHASES`.
+- **Risk:** Medium. Existing scripts with undeclared inputs or outputs will fail at build time until their dependency lists are completed. Treat enabling sandboxing as a one-time cleanup pass per target: turn it on, fix every violation Xcode lists in the build log, then enable phase fusion.
+
+### Script Phase Fusion
+
+- **Key:** `FUSE_BUILD_SCRIPT_PHASES`
+- **Recommended:** `YES`, gated on (a) `ENABLE_USER_SCRIPT_SANDBOXING=YES` for the same target, and (b) every Run Script phase in the target declaring its complete inputs and outputs (or `.xcfilelist` files for long lists).
+- **Why:** Without fusion, the build system runs consecutive Run Script phases serially within a target to avoid data races. From WWDC22 session 110364 *Demystify parallelization in Xcode builds* (Ben, Xcode Build System team):
+
+  > If the scripts in a target are configured to run based on dependency analysis and specify their complete list of inputs and outputs, then the build setting FUSE_BUILD_SCRIPT_PHASES can be set to YES to indicate the build system should attempt to run them in parallel.
+
+  Why sandboxing is the required prerequisite:
+
+  > And in combination with the previously explained build setting FUSE_BUILD_SCRIPT_PHASES, script phases with correctly defined dependency edges through sandboxing can execute in parallel to reduce the critical path of the build.
+
+  Enabling fusion without sandboxing in place means an undeclared input can let one script read a file before another has written it, causing intermittent build failures or stale outputs.
+- **Measurement:** Target-dependent. A target with N parallelizable Run Script phases of average duration `t` saves up to `(N-1) * t` on every clean (or fully re-run) build once fusion is enabled. As a representative shape, NSK ships with 12 `PhaseScriptExecution` tasks on a clean build per the orchestrator's documented benchmarks; projects with several script phases per target are the strongest beneficiaries. Targets with only one Run Script phase, or whose phases already run in parallel because they are in different targets, see no direct improvement.
+- **Risk:** Medium when both prerequisites are met (fusion can still expose latent dependency-declaration gaps in scripts the sandbox cleanup missed). High if enabled without sandboxing -- see the Why section above.
+
 ## Cross-Target Consistency
 
 These checks find settings differences between targets that cause redundant build work.

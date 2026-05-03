@@ -85,6 +85,20 @@ Key takeaways:
 - Module variant duplication is a key bottleneck -- uniform compiler options across targets prevent it.
 - The build log shows each module as a discrete task, making it easier to diagnose scheduling issues.
 
+## Apple: Demystify parallelization in Xcode builds (WWDC22)
+
+Source:
+
+- <https://developer.apple.com/videos/play/wwdc2022/110364/>
+
+Key takeaways:
+
+- The Xcode Build System runs build phases in parallel based on declared inputs and outputs; serialization happens only when dependencies are missing or undeclared.
+- `ENABLE_USER_SCRIPT_SANDBOXING=YES` blocks Run Script phases from accessing files inside the source root or derived data directory unless those files are declared as inputs or outputs. Used to surface dependency-declaration gaps; not a security feature.
+- `FUSE_BUILD_SCRIPT_PHASES=YES` lets consecutive Run Script phases within a target run in parallel. Safe only when sandboxing is on and every phase declares its complete inputs and outputs.
+- A target's Swift module is now produced by a separate emit-module task, which lets downstream targets begin compilation as soon as the module is available rather than waiting for the full target compile.
+- Eager Linking (`EAGER_LINKING=YES`) lets a dependent target's link task depend on the dependency's text-based stub instead of its linked product, shortening the critical path for pure Swift targets that are dynamically linked.
+
 ## Swift Compile-Time Best Practices
 
 Well-known Swift language patterns that reduce type-checker workload during compilation:
@@ -145,7 +159,7 @@ Key takeaways:
 
 - "Planning Swift module" can dominate incremental builds (up to 30s per module), sometimes exceeding clean build time.
 - Replanning every module without scheduling compiles is a sign that build inputs are being modified unexpectedly (e.g., a misconfigured linter touching file timestamps).
-- Enable **Task Backtraces** (Xcode 16.4+: Scheme Editor > Build > Build Debugging) to see why each task re-ran in an incremental build.
+- Enable **Task Backtraces** (Xcode 26.4+: Scheme Editor > Build > Build Debugging) to see why each task re-ran in an incremental build.
 - Heavy Swift macro usage (e.g., TCA / swift-syntax) can cause trivial changes to cascade into near-full rebuilds.
 - `swift-syntax` builds universally (all architectures) when no prebuilt binary is available, adding significant overhead.
 - `SwiftEmitModule` can take 60s+ after a single-line change in large modules.
