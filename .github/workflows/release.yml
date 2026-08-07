@@ -60,6 +60,12 @@ jobs:
       - name: Bump plugin manifest version
         run: |
           set -euo pipefail
+          for manifest in plugin.json .cursor-plugin/plugin.json; do
+            jq --arg version "$VERSION" '.version = $version' "$manifest" > "$manifest.tmp"
+            mv "$manifest.tmp" "$manifest"
+          done
+          sed -i -E "s/^version: \".*\"$/version: \"$VERSION\"/" agents/openai.yaml
+
           jq --arg version "$VERSION" '.version = $version' .claude-plugin/plugin.json > .claude-plugin/plugin.json.tmp
           mv .claude-plugin/plugin.json.tmp .claude-plugin/plugin.json
 
@@ -78,7 +84,7 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .claude-plugin/plugin.json .claude-plugin/marketplace.json
+          git add plugin.json .cursor-plugin/plugin.json agents/openai.yaml .claude-plugin/plugin.json .claude-plugin/marketplace.json
           git commit -m "Bump version to $VERSION"
           git push
 

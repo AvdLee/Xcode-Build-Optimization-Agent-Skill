@@ -1,0 +1,4 @@
+interface:
+  display_name: "Xcode Project Analyzer"
+  short_description: "Audit project configuration, build settings, and script phases for build-time wins."
+  brand_color: "#0071E3"

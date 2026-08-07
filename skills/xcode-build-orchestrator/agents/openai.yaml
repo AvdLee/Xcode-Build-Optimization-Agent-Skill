@@ -1,0 +1,4 @@
+interface:
+  display_name: "Xcode Build Orchestrator"
+  short_description: "Coordinate benchmarking, analysis, and prioritized build optimizations."
+  brand_color: "#0071E3"

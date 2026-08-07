@@ -1,0 +1,28 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "xcode-build-skills",
+  "version": "1.1.0",
+  "description": "A multi-skill plugin for benchmarking and optimizing Xcode builds, compile hotspots, project settings, and Swift Package Manager dependency overhead.",
+  "author": {
+    "name": "Antoine van der Lee",
+    "email": "contact@avanderlee.com",
+    "url": "https://www.avanderlee.com"
+  },
+  "homepage": "https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill",
+  "repository": "https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill",
+  "license": "MIT",
+  "keywords": [
+    "xcode",
+    "builds",
+    "incremental-builds",
+    "clean-builds",
+    "swift",
+    "ios",
+    "macos",
+    "spm",
+    "benchmarking",
+    "compilation",
+    "project-settings",
+    "explicit-modules"
+  ]
+}

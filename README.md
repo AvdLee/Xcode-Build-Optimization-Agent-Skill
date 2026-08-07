@@ -4,6 +4,8 @@
 
 Open-source Agent Skills for benchmarking and optimizing Xcode build performance across clean builds, incremental builds, compile hotspots, project settings, and Swift Package Manager overhead.
 
+This repository is packaged as a portable [Agent Plugin](https://agent-plugins.org) (spec 1.0.0): compatible clients discover all six skills automatically from the root `plugin.json` manifest and the `skills/` directory. Client-specific manifests for Claude Code, Cursor, Codex, and pi are included as well.
+
 ## Quick Start
 
 Install all six skills (the orchestrator needs the specialist skills to work):
@@ -162,11 +164,9 @@ To enable for everyone in a repository, add to your project configuration:
 }
 ```
 
-### Option C: Cursor Plugin (coming soon)
+### Option C: Cursor Plugin
 
-This repository is packaged for Cursor plugin submission, but the marketplace listing is not live yet.
-
-Once approved, you'll be able to install it from the Cursor Marketplace.
+Load the plugin from a local clone by placing it in `~/.cursor/plugins/local`, or install it from the Cursor Marketplace once listed. Cursor supports both the portable Agent Plugins manifest (`plugin.json`) and the Cursor Plugin manifest (`.cursor-plugin/plugin.json`) included in this repository.
 
 ### Option D: Codex / OpenAI-compatible tools
 
