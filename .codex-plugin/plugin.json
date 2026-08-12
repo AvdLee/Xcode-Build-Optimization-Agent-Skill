@@ -1,0 +1,45 @@
+{
+  "name": "xcode-build-skills",
+  "version": "1.1.0",
+  "description": "A multi-skill plugin for benchmarking and optimizing Xcode builds, compile hotspots, project settings, and Swift Package Manager dependency overhead.",
+  "author": {
+    "name": "Antoine van der Lee",
+    "email": "contact@avanderlee.com",
+    "url": "https://www.avanderlee.com"
+  },
+  "homepage": "https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill",
+  "repository": "https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill",
+  "license": "MIT",
+  "keywords": [
+    "xcode",
+    "builds",
+    "incremental-builds",
+    "clean-builds",
+    "swift",
+    "ios",
+    "macos",
+    "spm",
+    "benchmarking",
+    "compilation",
+    "project-settings",
+    "explicit-modules"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Xcode Build Optimization",
+    "shortDescription": "Speed up your Xcode builds",
+    "longDescription": "A multi-skill plugin for benchmarking and optimizing Xcode builds, compile hotspots, project settings, and Swift Package Manager dependency overhead.",
+    "developerName": "Antoine van der Lee",
+    "category": "Developer Tools",
+    "websiteURL": "https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill",
+    "defaultPrompt": [
+      "Benchmark my Xcode build and find what is slowing it down.",
+      "Analyze the compile hotspots in this project.",
+      "Audit my build settings for optimization opportunities."
+    ],
+    "brandColor": "#0071E3",
+    "composerIcon": "./assets/logo-small.png",
+    "logo": "./assets/logo.png",
+    "termsOfServiceURL": "https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill/blob/main/LICENSE"
+  }
+}
