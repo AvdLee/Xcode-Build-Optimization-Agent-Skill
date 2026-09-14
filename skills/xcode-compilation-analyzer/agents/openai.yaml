@@ -1,0 +1,4 @@
+interface:
+  display_name: "Xcode Compilation Analyzer"
+  short_description: "Find Swift and mixed-language compile hotspots from build timing data."
+  brand_color: "#0071E3"

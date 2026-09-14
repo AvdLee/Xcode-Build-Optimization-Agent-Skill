@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/anthropics/claude-code/refs/heads/main/marketplace/marketplace.schema.json",
   "name": "xcode-build-skills",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "owner": {
     "name": "Antoine van der Lee",
     "email": "contact@avanderlee.com"
@@ -14,7 +14,7 @@
       "name": "xcode-build-skills",
       "description": "Six Xcode build optimization skills in one plugin: benchmark, compilation analysis, project analysis, SPM build analysis, a recommend-first orchestrator, and a fixer for applying approved changes.",
       "repository": "https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill",
-      "version": "1.0.1",
+      "version": "1.1.0",
       "author": {
         "name": "Antoine van der Lee",
         "email": "contact@avanderlee.com"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Xcode Build Fixer"
+  short_description: "Apply approved build optimizations and re-benchmark to verify improvement."
+  brand_color: "#0071E3"

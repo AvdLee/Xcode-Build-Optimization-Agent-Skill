@@ -1,0 +1,4 @@
+interface:
+  display_name: "SPM Build Analysis"
+  short_description: "Analyze Swift Package Manager dependencies and plugin overhead that slow builds."
+  brand_color: "#0071E3"

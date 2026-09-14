@@ -1,6 +1,6 @@
 {
   "name": "xcode-build-skills",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A multi-skill plugin for benchmarking and optimizing Xcode builds, compile hotspots, project settings, and Swift Package Manager dependency overhead.",
   "author": {
     "name": "Antoine van der Lee",
@@ -8,7 +8,7 @@
   },
   "repository": "https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill",
   "license": "MIT",
-  "logo": "assets/logo.svg",
+  "logo": "assets/logo.png",
   "keywords": [
     "xcode",
     "builds",
@@ -30,5 +30,6 @@
     "skills/spm-build-analysis",
     "skills/xcode-build-orchestrator",
     "skills/xcode-build-fixer"
-  ]
+  ],
+  "homepage": "https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill"
 }

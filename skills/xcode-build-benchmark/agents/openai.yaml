@@ -1,0 +1,4 @@
+interface:
+  display_name: "Xcode Build Benchmark"
+  short_description: "Repeatable clean and incremental build baselines with timing summaries."
+  brand_color: "#0071E3"

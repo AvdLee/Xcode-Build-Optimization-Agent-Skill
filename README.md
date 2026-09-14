@@ -4,12 +4,14 @@
 
 Open-source Agent Skills for benchmarking and optimizing Xcode build performance across clean builds, incremental builds, compile hotspots, project settings, and Swift Package Manager overhead.
 
+This repository is packaged as a portable [Agent Plugin](https://agent-plugins.org) (spec 1.0.0): compatible clients discover all six skills automatically from the root `plugin.json` manifest and the `skills/` directory. Client-specific manifests for Claude Code, Cursor, Codex, and pi are included as well.
+
 ## Quick Start
 
 Install all six skills (the orchestrator needs the specialist skills to work):
 
 ```bash
-npx skills add https://github.com/avdlee/xcode-build-optimization-agent-skill
+npx skills@latest add https://github.com/avdlee/xcode-build-optimization-agent-skill
 ```
 
 Then open your Xcode project in your AI coding tool and say:
@@ -114,23 +116,31 @@ The orchestrator is the recommended starting point -- it coordinates the other f
 
 ## Installation Options
 
-### Option A: Using skills.sh
+### Option A: Using skills.sh (recommended)
 
 Install all six skills (required -- the orchestrator depends on the specialist skills):
 
 ```bash
-npx skills add https://github.com/avdlee/xcode-build-optimization-agent-skill
+npx skills@latest add https://github.com/avdlee/xcode-build-optimization-agent-skill
 ```
 
 To install a single skill for standalone use, add the `--skill` flag:
 
 ```bash
-npx skills add https://github.com/avdlee/xcode-build-optimization-agent-skill --skill xcode-project-analyzer
+npx skills@latest add https://github.com/avdlee/xcode-build-optimization-agent-skill --skill xcode-project-analyzer
 ```
 
 Available individual skills: `xcode-build-benchmark`, `xcode-compilation-analyzer`, `xcode-project-analyzer`, `spm-build-analysis`, `xcode-build-orchestrator`, `xcode-build-fixer`. Note that the orchestrator requires all other skills to be installed.
 
-### Option B: Claude Code Plugin
+### Option B: ChatGPT & Codex (OpenAI Plugins Directory)
+
+This plugin is distributed through the universal OpenAI Plugins Directory shared by ChatGPT and Codex:
+
+1. In the ChatGPT desktop app, select **Codex** (or ChatGPT with **Work** enabled), or use the plugin browser in Codex CLI.
+2. Open **Plugins** and search for "Xcode Build Optimization".
+3. Install the plugin. All six skills become available in new chats and sessions.
+
+### Option C: Claude Code Plugin
 
 1. Add the marketplace:
 
@@ -162,38 +172,13 @@ To enable for everyone in a repository, add to your project configuration:
 }
 ```
 
-### Option C: Cursor Plugin (coming soon)
+### Option D: Cursor Plugin
 
-This repository is packaged for Cursor plugin submission, but the marketplace listing is not live yet.
+Load the plugin from a local clone by placing it in `~/.cursor/plugins/local`, or install it from the Cursor Marketplace once listed. Cursor supports both the portable Agent Plugins manifest (`plugin.json`) and the Cursor Plugin manifest (`.cursor-plugin/plugin.json`) included in this repository.
 
-Once approved, you'll be able to install it from the Cursor Marketplace.
+### Using another tool?
 
-### Option D: Codex / OpenAI-compatible tools
-
-This repository includes an `agents/openai.yaml` manifest. Copy or symlink the skill folders into your Codex skills directory:
-
-```bash
-cp -R skills/ "$CODEX_HOME/skills/"
-```
-
-See [Codex skills documentation](https://developers.openai.com/codex/skills/#where-to-save-skills) for details on where to save skills.
-
-### Option E: Using pi package manager
-
-Install via [pi](https://github.com/mariozechner/pi-mono):
-```bash
-pi install https://github.com/AvdLee/Xcode-Build-Optimization-Agent-Skill
-```
-
-The skills will be available automatically in pi sessions.
-
-### Option F: Manual Install
-
-1. Clone this repository.
-2. Install or symlink the specific skill folder from `skills/` that you want.
-3. Ask your AI coding tool to use the corresponding skill.
-
-Useful docs: [Codex Skills](https://developers.openai.com/codex/skills/#where-to-save-skills) | [Claude Code Agent Skills](https://code.claude.com/en/skills) | [Cursor Skills](https://cursor.com/docs/context/skills#enabling-skills)
+See [INSTALLATION.md](INSTALLATION.md) for all other installation options: pi, Gemini CLI, Autohand Code, and manual installation.
 
 ## Why Clean And Incremental Builds Both Matter
 
