@@ -11,7 +11,7 @@ This repository is packaged as a portable [Agent Plugin](https://agent-plugins.o
 Install all six skills (the orchestrator needs the specialist skills to work):
 
 ```bash
-npx skills add https://github.com/avdlee/xcode-build-optimization-agent-skill
+npx skills@latest add https://github.com/avdlee/xcode-build-optimization-agent-skill
 ```
 
 Then open your Xcode project in your AI coding tool and say:
@@ -121,13 +121,13 @@ The orchestrator is the recommended starting point -- it coordinates the other f
 Install all six skills (required -- the orchestrator depends on the specialist skills):
 
 ```bash
-npx skills add https://github.com/avdlee/xcode-build-optimization-agent-skill
+npx skills@latest add https://github.com/avdlee/xcode-build-optimization-agent-skill
 ```
 
 To install a single skill for standalone use, add the `--skill` flag:
 
 ```bash
-npx skills add https://github.com/avdlee/xcode-build-optimization-agent-skill --skill xcode-project-analyzer
+npx skills@latest add https://github.com/avdlee/xcode-build-optimization-agent-skill --skill xcode-project-analyzer
 ```
 
 Available individual skills: `xcode-build-benchmark`, `xcode-compilation-analyzer`, `xcode-project-analyzer`, `spm-build-analysis`, `xcode-build-orchestrator`, `xcode-build-fixer`. Note that the orchestrator requires all other skills to be installed.
