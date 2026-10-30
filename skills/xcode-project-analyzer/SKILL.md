@@ -31,7 +31,7 @@ Use this skill for project- and target-level build inefficiencies that are unlik
 
 ## Build Settings Best Practices Audit
 
-Every project audit should include a build settings checklist comparing the project's Debug and Release configurations against the recommended values in [build-settings-best-practices.md](references/build-settings-best-practices.md). Present results using checkmark/cross indicators (`[x]`/`[ ]`). The scope is strictly build performance -- do not flag language-migration settings like `SWIFT_STRICT_CONCURRENCY` or `SWIFT_UPCOMING_FEATURE_*`.
+Every project audit should include a build settings checklist comparing the project's Debug and Release configurations against the recommended values in [build-settings-best-practices.md](references/build-settings-best-practices.md). Read settings from `project.pbxproj` or, in Xcode 27+ projects, `project.xcproj`. In the JSON format, resolve `KEY[config=Name]` conditional keys per configuration (see "Project File Formats" in the reference). Present results using checkmark/cross indicators (`[x]`/`[ ]`). The scope is strictly build performance -- do not flag language-migration settings like `SWIFT_STRICT_CONCURRENCY` or `SWIFT_UPCOMING_FEATURE_*`.
 
 ## Apple-Derived Checks
 

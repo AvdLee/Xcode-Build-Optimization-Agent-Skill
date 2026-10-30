@@ -16,9 +16,9 @@ Use this reference when package dependencies or package plugins are suspected bu
 
 ## Package Reference Verification
 
-- Before including any local package in a build-time recommendation, confirm it appears in the project's `XCLocalSwiftPackageReference` section of `project.pbxproj`.
+- Before including any local package in a build-time recommendation, confirm the project file references it: an `XCLocalSwiftPackageReference` entry in `project.pbxproj`, or a `"kind": "local"` entry in the top-level `packages` array of `project.xcproj` (Xcode 27+).
 - A package existing under `Vendor/` or as a directory in the repo does not mean it is linked. Only referenced packages affect build time.
-- For remote packages, confirm the `XCRemoteSwiftPackageReference` entry exists and at least one `XCSwiftPackageProductDependency` links its product to a target.
+- For remote packages, confirm the `XCRemoteSwiftPackageReference` entry exists and at least one `XCSwiftPackageProductDependency` links its product to a target. In `project.xcproj`, look for a `"kind": "remote"` entry in `packages` and a target `package-product-members` entry whose `package` matches the repository name.
 
 ## Version Pin Feasibility
 

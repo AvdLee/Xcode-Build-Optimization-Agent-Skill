@@ -4,6 +4,12 @@ Concrete before/after examples for each fix category. Reference this when applyi
 
 ## Build Settings Fixes
 
+The examples below use `project.pbxproj` syntax, where each configuration has its own `buildSettings` block. In a `project.xcproj` (JSON, Xcode 27+) project, the same fix is a key in the flat `build-settings` map, using a `[config=Name]` condition for configuration-specific values:
+
+```
+"DEBUG_INFORMATION_FORMAT[config=Debug]": "dwarf",
+```
+
 ### Debug Information Format (Debug)
 
 Before (`project.pbxproj`):

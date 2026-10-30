@@ -28,7 +28,7 @@ When working from an optimization plan, read the approval checklist and implemen
 
 ### Build Settings
 
-Change `project.pbxproj` values to match the recommendations in [build-settings-best-practices.md](references/build-settings-best-practices.md).
+Change the project file's values (`project.pbxproj` or, in Xcode 27+ projects, `project.xcproj`) to match the recommendations in [build-settings-best-practices.md](references/build-settings-best-practices.md).
 
 Typical fixes:
 
@@ -38,7 +38,12 @@ Typical fixes:
 - Enable `EAGER_LINKING = YES` for Debug
 - Align cross-target settings to eliminate module variants
 
-When editing `project.pbxproj`, locate the correct `buildSettings` block by matching the target name and configuration name. Verify the change with `xcodebuild -showBuildSettings` after applying.
+First check which project file the `.xcodeproj` contains. Edit that file in its own format and never convert it to the other format (see "Project File Formats" in [build-settings-best-practices.md](references/build-settings-best-practices.md)).
+
+- `project.pbxproj`: locate the correct `buildSettings` block by matching the target name and configuration name.
+- `project.xcproj`: find the target's entry in `targets` by `name` (or use the root object for project-level settings) and edit its `build-settings` map. For a configuration-specific value, set the `KEY[config=Debug]` key. Leave other configurations unchanged: if an unconditional `KEY` exists, keep it so they still inherit it. Keep keys sorted, as Xcode writes them.
+
+Verify the change with `xcodebuild -showBuildSettings` after applying.
 
 ### Script Phases
 

@@ -3,6 +3,7 @@
 """Generate a Markdown optimization report from benchmark and diagnostics artifacts."""
 
 import argparse
+import fnmatch
 import json
 import re
 from datetime import datetime, timezone
@@ -82,6 +83,98 @@ def _parse_target_configs(pbxproj: str) -> Dict[str, Dict[str, Dict[str, str]]]:
     """Extract per-target Debug and Release build settings."""
     all_configs = _parse_all_build_configs(pbxproj)
     return _resolve_config_list(pbxproj, all_configs, "PBXNativeTarget")
+
+
+# ---------------------------------------------------------------------------
+# project.xcproj (JSON, Xcode 27+) helpers
+# ---------------------------------------------------------------------------
+
+_CONDITION_RE = re.compile(r"\[([^=\]]+)=([^\]]*)\]")
+
+
+def _load_json5(text: str) -> Any:
+    """Parse the JSON5 subset Xcode writes: standard JSON plus comments and trailing commas."""
+    out: List[str] = []
+    i, n = 0, len(text)
+    in_string = False
+    while i < n:
+        c = text[i]
+        if in_string:
+            out.append(c)
+            if c == "\\" and i + 1 < n:
+                out.append(text[i + 1])
+                i += 2
+                continue
+            if c == '"':
+                in_string = False
+            i += 1
+            continue
+        if c == '"':
+            in_string = True
+        elif text.startswith("//", i):
+            end = text.find("\n", i)
+            i = n if end == -1 else end
+            continue
+        elif text.startswith("/*", i):
+            end = text.find("*/", i + 2)
+            i = n if end == -1 else end + 2
+            continue
+        elif c in "]}":
+            k = len(out) - 1
+            while k >= 0 and out[k].isspace():
+                k -= 1
+            if k >= 0 and out[k] == ",":
+                del out[k]
+        out.append(c)
+        i += 1
+    return json.loads("".join(out))
+
+
+def _resolve_xcproj_settings(
+    build_settings: Dict[str, Any], config_names: List[str]
+) -> Dict[str, Dict[str, str]]:
+    """Expand a flat build-settings map with `KEY[config=Name]` conditions into per-configuration settings.
+
+    Settings conditional on anything other than the configuration (sdk, arch) are skipped,
+    matching the pbxproj parser which only reads unconditional keys.
+    """
+    resolved: Dict[str, Dict[str, str]] = {name: {} for name in config_names}
+    conditional: List[Tuple[str, str, str]] = []
+    for raw_key, value in build_settings.items():
+        if isinstance(value, list):
+            value = " ".join(value)
+        key = raw_key.split("[", 1)[0]
+        conditions = _CONDITION_RE.findall(raw_key)
+        if not conditions:
+            for settings in resolved.values():
+                settings[key] = value
+        elif len(conditions) == 1 and conditions[0][0] == "config":
+            conditional.append((conditions[0][1], key, value))
+    for pattern, key, value in conditional:
+        for name, settings in resolved.items():
+            if fnmatch.fnmatchcase(name, pattern):
+                settings[key] = value
+    return resolved
+
+
+def _parse_xcproj_configs(
+    xcproj: str,
+) -> Tuple[Dict[str, Dict[str, str]], Dict[str, Dict[str, Dict[str, str]]]]:
+    """Extract project-level and per-native-target build settings from a project.xcproj file."""
+    project = _load_json5(xcproj)
+    config_names = [
+        c if isinstance(c, str) else c.get("name", "")
+        for c in project.get("configurations", [])
+    ]
+    project_configs = _resolve_xcproj_settings(project.get("build-settings", {}), config_names)
+    target_configs: Dict[str, Dict[str, Dict[str, str]]] = {}
+    for target in project.get("targets", []):
+        if target.get("kind", "native") != "native":
+            continue
+        target_configs[target["name"]] = _resolve_xcproj_settings(
+            target.get("build-settings", {}), config_names
+        )
+    return project_configs, target_configs
 
 
 # ---------------------------------------------------------------------------
@@ -493,8 +586,11 @@ def main() -> int:
     project_configs: Dict[str, Dict[str, str]] = {}
     target_configs: Dict[str, Dict[str, Dict[str, str]]] = {}
     if args.project_path:
+        xcproj_path = Path(args.project_path) / "project.xcproj"
         pbxproj_path = Path(args.project_path) / "project.pbxproj"
-        if pbxproj_path.exists():
+        if xcproj_path.exists():
+            project_configs, target_configs = _parse_xcproj_configs(xcproj_path.read_text())
+        elif pbxproj_path.exists():
             pbxproj = pbxproj_path.read_text()
             project_configs = _parse_project_level_configs(pbxproj)
             target_configs = _parse_target_configs(pbxproj)

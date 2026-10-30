@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Scan a project.pbxproj for branch-pinned SPM dependencies and check tag availability."""
+"""Scan a project.xcproj or project.pbxproj for branch-pinned SPM dependencies and check tag availability."""
 
 import argparse
 import json
@@ -8,7 +8,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 
 _PKG_REF_RE = re.compile(
@@ -57,6 +57,60 @@ def find_branch_pins(pbxproj: str) -> List[Dict[str, str]]:
     return results
 
 
+def _load_json5(text: str) -> Any:
+    """Parse the JSON5 subset Xcode writes: standard JSON plus comments and trailing commas."""
+    out: List[str] = []
+    i, n = 0, len(text)
+    in_string = False
+    while i < n:
+        c = text[i]
+        if in_string:
+            out.append(c)
+            if c == "\\" and i + 1 < n:
+                out.append(text[i + 1])
+                i += 2
+                continue
+            if c == '"':
+                in_string = False
+            i += 1
+            continue
+        if c == '"':
+            in_string = True
+        elif text.startswith("//", i):
+            end = text.find("\n", i)
+            i = n if end == -1 else end
+            continue
+        elif text.startswith("/*", i):
+            end = text.find("*/", i + 2)
+            i = n if end == -1 else end + 2
+            continue
+        elif c in "]}":
+            k = len(out) - 1
+            while k >= 0 and out[k].isspace():
+                k -= 1
+            if k >= 0 and out[k] == ",":
+                del out[k]
+        out.append(c)
+        i += 1
+    return json.loads("".join(out))
+
+
+def find_branch_pins_xcproj(xcproj: str) -> List[Dict[str, str]]:
+    results: List[Dict[str, str]] = []
+    for package in _load_json5(xcproj).get("packages", []):
+        if package.get("kind") != "remote":
+            continue
+        version = package.get("version") or {}
+        if "branch" not in version:
+            continue
+        url = package["repository"]
+        name = url.rstrip("/").rsplit("/", 1)[-1]
+        if name.endswith(".git"):
+            name = name[: -len(".git")]
+        results.append({"name": name, "url": url, "branch": version["branch"]})
+    return results
+
+
 def check_tags(url: str) -> List[str]:
     try:
         result = subprocess.run(
@@ -79,13 +133,15 @@ def check_tags(url: str) -> List[str]:
 
 def main() -> int:
     args = parse_args()
+    xcproj_path = Path(args.project) / "project.xcproj"
     pbxproj_path = Path(args.project) / "project.pbxproj"
-    if not pbxproj_path.exists():
-        sys.stderr.write(f"Not found: {pbxproj_path}\n")
+    if xcproj_path.exists():
+        pins = find_branch_pins_xcproj(xcproj_path.read_text())
+    elif pbxproj_path.exists():
+        pins = find_branch_pins(pbxproj_path.read_text())
+    else:
+        sys.stderr.write(f"Not found: {xcproj_path} or {pbxproj_path}\n")
         return 1
-
-    pbxproj = pbxproj_path.read_text()
-    pins = find_branch_pins(pbxproj)
 
     if not pins:
         print("No branch-pinned SPM dependencies found.")

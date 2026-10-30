@@ -26,8 +26,8 @@ Use this skill when package structure, plugins, or dependency configuration are 
 
 Before including any local package in a recommendation, verify that it is actually part of the project's dependency graph. A `Vendor/` directory may contain packages that are not linked to any target.
 
-- Check `project.pbxproj` for `XCLocalSwiftPackageReference` entries that reference the package path.
-- Check `XCSwiftPackageProductDependency` entries to confirm the package's product is linked to at least one target.
+- `project.pbxproj`: check for `XCLocalSwiftPackageReference` entries that reference the package path, and `XCSwiftPackageProductDependency` entries that link the package's product to at least one target.
+- `project.xcproj` (Xcode 27+): check the top-level `packages` array for an entry with `"kind": "local"` and a matching `path`, and a target's `package-product-members` for an entry whose `package` names it.
 - If a local package exists on disk but is not referenced in the project, do not include it in build-time recommendations.
 
 When recommending version pins for branch-tracked dependencies:
@@ -36,7 +36,7 @@ When recommending version pins for branch-tracked dependencies:
   ```bash
   python3 scripts/check_spm_pins.py --project App.xcodeproj
   ```
-  This checks `git ls-remote --tags` for each branch-pinned package and reports which have tags available for pinning.
+  The script reads `project.xcproj` when present, otherwise `project.pbxproj`. It checks `git ls-remote --tags` for each branch-pinned package and reports which have tags available for pinning.
 - If no tags exist, recommend pinning to a specific commit revision hash for determinism instead.
 - Note which packages are branch-pinned because the upstream simply has no tags, versus packages that have tags but are intentionally tracking a branch.
 

@@ -18,6 +18,17 @@ Use checkmark and cross indicators when reporting:
 - `[x]` -- setting matches the recommended value
 - `[ ]` -- setting does not match; include the actual value and the expected value
 
+## Project File Formats
+
+An `.xcodeproj` bundle holds its configuration in one of two files. Check which one exists before reading or editing settings; never add the other one.
+
+- **`project.pbxproj`** (property list, all Xcode versions): each target and the project own an `XCBuildConfigurationList` that points to one `XCBuildConfiguration` per configuration. Each has its own `buildSettings = { ... };` block, so a Debug-only value lives in the Debug block.
+- **`project.xcproj`** (JSON5, Xcode 27+, default for new projects since Xcode 27.2): the root object and each entry in `targets` have a single flat `build-settings` map. Unconditional keys apply to every configuration. Per-configuration values use conditional keys, for example `"SWIFT_COMPILATION_MODE[config=Release]": "wholemodule"`. A conditional key overrides the unconditional key for that configuration. Keys can also carry `[sdk=...]` and `[arch=...]` conditions. The file can contain trailing commas and `//` or `/* */` comments, so parse it as JSON5, not strict JSON. Configuration names are listed in the top-level `configurations` array.
+
+Format reference: [Updating your Xcode project configuration file format](https://developer.apple.com/documentation/xcode/updating-your-xcode-project-configuration-file-format) and the open-source [xcode-project-format](https://github.com/apple/xcode-project-format) schema.
+
+When a project uses `project.xcproj`, report each setting in this checklist by its resolved per-configuration value: the `[config=Name]` key if present, otherwise the unconditional key.
+
 ## Debug Configuration
 
 These settings optimize for fast iteration during development.

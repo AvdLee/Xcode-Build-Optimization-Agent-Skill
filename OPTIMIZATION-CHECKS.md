@@ -155,7 +155,7 @@ The `spm-build-analysis` skill inspects Swift Package Manager dependencies for g
 - Circular dependencies (target-level cycles must be refactored; extract shared contracts into a separate module).
 - Build-tool and command plugins that run during incremental builds even when no input changed.
 - Branch-pinned packages (`branch:`) that force network checks on every fresh resolve; recommends pinning to tags or `revision:` hashes.
-- Package reference verification: confirms packages listed in recommendations actually appear in `project.pbxproj` as linked dependencies.
+- Package reference verification: confirms packages listed in recommendations actually appear in the project file (`project.pbxproj`, or `project.xcproj` in Xcode 27+) as linked dependencies.
 - Transitive dependency minimization: flags `@_exported import` umbrella modules that create hidden rebuild chains.
 - Interface/implementation separation opportunities for modules with heavy dependencies.
 - Test target isolation: test targets should depend on the module under test, not the entire app target.
